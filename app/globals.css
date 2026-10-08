@@ -375,7 +375,7 @@ pre {
   margin-top: 18px;
 }
 
-.clarification-options button,
+.clarification-options li,
 .example-grid button {
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -383,6 +383,63 @@ pre {
   background: white;
   color: var(--ink);
   text-align: left;
+}
+
+.clarification-options {
+  list-style: none;
+  padding: 0;
+}
+
+.primary-action {
+  margin-top: 16px;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: white;
+  font-weight: 700;
+}
+
+.local-result {
+  margin-top: 18px;
+}
+
+.local-scope {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.result-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.result-table th,
+.result-table td {
+  padding: 11px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-table th {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.inline-error {
+  padding: 12px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-radius: 8px;
+}
+
+.provenance-grid dd {
+  overflow-wrap: anywhere;
 }
 
 .example-grid {
