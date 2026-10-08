@@ -178,7 +178,7 @@ describe("B4 local DuckDB executor", () => {
       golden("mujeres de 20 a 29").expected,
       root,
       CPV2022_VP_CATALOG_V0,
-    )).rejects.toThrow("invalid_XRADIO:VIVIENDA");
+    )).rejects.toThrow("invalid_XRADIO:vivienda");
   });
 
   it("fails closed before DuckDB execution when a Parquet hash changes", async () => {
