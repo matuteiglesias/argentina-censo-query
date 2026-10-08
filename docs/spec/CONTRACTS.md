@@ -24,7 +24,7 @@ Ambiguity and unsupported requests are first-class states.
 
 Resolved canonical statistical AST.
 
-It contains Census identifiers and is the sole authority from which targets may be compiled.
+It contains Census identifiers and is the sole authority from which targets and UI interpretation views may be derived.
 
 ### CensusCatalog
 
@@ -47,12 +47,13 @@ Names the catalog and source/release assumptions used for compilation. It is int
 Contains:
 
 - original question;
-- human-readable interpretation;
 - canonical CensusQuery;
 - compilation context;
 - SQL artifact;
 - Redatam Process artifact;
 - INDEC Web recipe.
+
+The bundle deliberately does **not** store an independent free-text interpretation summary. A later UI description must be rendered deterministically from CensusQuery so a second semantic channel cannot drift away from the canonical AST.
 
 No timestamp is required in the core bundle so canonical serialization can remain deterministic.
 
