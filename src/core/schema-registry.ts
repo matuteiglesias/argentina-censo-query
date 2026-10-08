@@ -10,8 +10,10 @@ import {
   CompilationTargetSchema,
 } from "./contracts/compilation.js";
 import { QueryValidationResultSchema } from "./contracts/validation.js";
+import { CanonicalResultSchema } from "./contracts/result.js";
 
 export const CONTRACT_SCHEMA_REGISTRY = {
+  CanonicalResult: CanonicalResultSchema,
   CensusCatalog: CensusCatalogSchema,
   CensusQuery: CensusQuerySchema,
   Clarification: ClarificationSchema,
