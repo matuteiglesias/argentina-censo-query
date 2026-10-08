@@ -26,7 +26,7 @@ const TOTAL_COUNT_URL = {
 
 const SELECTED_COUNT_URL = {
   PERSONA: `${ROOT}/Qts?BASE=CPV2022&ITEM=CONTEOPOBPART&lang=ESP`,
-  HOGAR: `${ROOT}/Qts?BASE=CPV2022&ITEM=CONTEOHOG&lang=ESP`,
+  HOGAR: "https://redatam.indec.gob.ar/argbin/RpWebStats.exe/Qts?BASE=CPV2022&ITEM=CONTEOHOG&lang=ESP",
 } as const;
 
 const AVERAGE_URL =
