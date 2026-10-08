@@ -12,3 +12,8 @@ export * from "./catalog/resolver.js";
 export * from "./catalog/cpv2022-vp-v0.js";
 export * from "./validation/query-validator.js";
 export * from "./schema-registry.js";
+export * from "./compilation/shared.js";
+export * from "./compilation/sql.js";
+export * from "./compilation/redatam.js";
+export * from "./compilation/indec-web.js";
+export * from "./compilation/bundle.js";
