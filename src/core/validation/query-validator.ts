@@ -204,7 +204,7 @@ export function validateCensusQuery(
         `count is not supported for ${entity.id}`,
       );
     }
-  } else if (query.measure.type === "average") {
+  } else if (measure.type === "average") {
     const variable = catalog.variables.find(
       (item) => item.id === measure.variable,
     );
