@@ -88,7 +88,11 @@ The last example is only supported when the predicate traverses a validated ance
 - cross-census comparisons;
 - cross-universe composition across VP / PO_A_IG / VC_PSC;
 - free-form result interpretation;
-- query execution.
+- hosted/public/national query execution;
+- arbitrary SQL execution;
+- remote Redatam/INDEC execution.
+
+B4 is a narrow exception for local scientific qualification: compiler-generated SQL may execute read-only against an explicitly supplied, verified VP RADIO slice. That does not enlarge the semantic grammar.
 
 ## Ambiguity examples
 
