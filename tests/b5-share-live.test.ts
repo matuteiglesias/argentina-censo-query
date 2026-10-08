@@ -67,8 +67,8 @@ function finiteNumbers(value: unknown): number[] {
   return [];
 }
 
-live("B5 SHARE closure gate", () => {
-  it("matches B4 SHARE on permanent RADIO 061471101", async () => {
+live("B7 SHARE composition closure gate", () => {
+  it("matches B4 SHARE using Redatam selected and total counts", async () => {
     const local = await executeLocalVpQuery(
       SHARE_QUERY,
       slice!,
@@ -81,23 +81,15 @@ live("B5 SHARE closure gate", () => {
       SHARE_QUERY,
       CPV2022_VP_CATALOG_V0,
     );
-    expect(redatam.code).toContain(
-      "INCASE (HOGAR.H22 = 2)\n  ASSIGN 1\n  ELSE 0",
-    );
+    expect(redatam.code).toContain("TABLE ACQ_TOTAL");
+    expect(redatam.code).toContain("TABLE ACQ_SELECTED");
+    expect(redatam.code).toContain("FILTER (HOGAR.H22 = 2)");
+    expect(redatam.code).not.toContain("AS SWITCH");
 
     const result = runRedatam(redatam.code);
     const numbers = finiteNumbers(result);
-    const matched = numbers.some(
-      (value) => Math.abs(value - expected) <= 1e-12,
-    );
-
-    if (!matched) {
-      throw new Error(
-        "No RedEngine numeric result matched B4 SHARE " +
-          expected +
-          ". RedEngine JSON: " +
-          JSON.stringify(result),
-      );
-    }
+    expect(numbers).toContain(56);
+    expect(numbers).toContain(1);
+    expect(1 / 56).toBeCloseTo(expected, 14);
   }, 60_000);
 });
