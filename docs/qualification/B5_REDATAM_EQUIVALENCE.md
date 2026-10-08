@@ -165,22 +165,10 @@ Raw Redatam DPTO output was `147` under selected province `06`; normalization to
 B4 passed. The corrected compiler executes and agrees for 9 of 10 required cases, including COUNT, AVERAGE, cross-grain PERSONA ← HOGAR filtering, and PROV/DPTO geography. B5 remains **BLOCKED** because SHARE cannot execute under the recorded RedEngine 1.1.0/redatamx 1.1.3 runtime. The repository must not mark B5 qualified, update the README status, or open the requested qualification PR until a supported runtime path executes the generated SHARE program and its normalized result agrees.
 
 
-## Closure candidate after initial qualification
+## Superseded closure attempt
 
-A follow-up compiler correction changes SHARE from:
+A follow-up attempt tried a multiline `INCASE` / `ASSIGN` form for the generated SWITCH variable. RedEngine 1.1.0-final still rejected `INCASE`, so that direct SHARE representation was abandoned.
 
-~~~text
-INCASE (condition) ASSIGN 1
-~~~
+B7 now defines SHARE as two COUNT tables — `ACQ_TOTAL` and `ACQ_SELECTED` — followed by deterministic `selected / total` canonicalization. See `docs/qualification/B7_CANONICAL_EQUIVALENCE.md`.
 
-to the older-runtime-compatible statement pair:
-
-~~~text
-INCASE (condition)
-ASSIGN 1
-ELSE 0
-~~~
-
-The correction is covered by cloud tests and by the opt-in live gate `tests/b5-share-live.test.ts`.
-
-This document remains **BLOCKERS** until that live gate runs successfully on the same RedEngine 1.1.0-final / redatamx 1.1.3 / RADIO 061471101 environment and records the expected B4 value `1/56 = 0.017857142857142856`. Do not reinterpret this note as qualification evidence by itself.
+The 9 passing cases in this report remain active evidence for the COUNT/FILTER/CROSSTABS/AVERAGE primitives reused by B7.
