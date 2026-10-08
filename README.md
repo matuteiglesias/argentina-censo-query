@@ -8,7 +8,7 @@ One canonical CensusQuery drives:
 2. Redatam Process;
 3. INDEC Redatam WebServer reproduction instructions.
 
-The repository now also contains the first Next.js product shell. The free-form LLM interpreter is intentionally not connected yet.
+The repository contains the first Next.js product shell and a server-only C3 interpreter seam. GoldenInterpreter remains the default; Google GenAI is opt-in through explicit server configuration.
 
 ## Architecture
 
@@ -55,6 +55,7 @@ Implemented:
 - B8 — 20 supported golden questions + ambiguity/unsupported edge corpus;
 - C0 — query-sensitive capability/evidence registry;
 - C1 — Next.js App Router shell using B8 as a deterministic temporary interpreter.
+- C3 — bounded SemanticInterpreter contract, catalog-derived lexicon, strict Google GenAI adapter, and optional B8 evaluator.
 
 ### Evidence boundaries
 
@@ -75,13 +76,17 @@ See:
 ## Run the C1 shell
 
 ~~~bash
-npm install
+npm ci
 npm run dev
 ~~~
 
 C1 recognizes only the product golden corpus. Unknown questions fail visibly instead of being guessed.
 
 The web Results panel deliberately does not execute Census microdata. B4 remains a local verified-slice scientific surface.
+
+## C3 server interpreter
+
+The C3 HTTP seam is `POST /api/interpret` with `{ "question": "..." }`. It returns an existing `InterpretationResult`, a resolved `CensusQuery` for candidates, and bounded provenance. With no `C3_INTERPRETER_PROVIDER=google`, it uses the deterministic GoldenInterpreter. Google mode requires `GEMINI_API_KEY`; it never runs in the browser and the model sees only the semantic lexicon.
 
 ## Quality gate
 
@@ -97,7 +102,7 @@ The gate includes:
 
 ## Still deferred
 
-- free-form structured LLM interpreter;
+- live-provider C3 evaluation and production deployment;
 - hosted/national Census execution;
 - accounts/history;
 - maps/charts;
