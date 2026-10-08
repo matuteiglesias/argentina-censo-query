@@ -24,7 +24,7 @@ export type SupportedDemo = {
 export type EdgeDemo = {
   kind: "edge";
   question: string;
-  outcome: InterpretationResult;
+  outcome: Exclude<InterpretationResult, { status: "candidate" }>;
 };
 
 export type DemoCase = SupportedDemo | EdgeDemo;
