@@ -14,6 +14,7 @@ describe("SemanticIntent", () => {
     const parsed = SemanticIntentSchema.parse({
       contract: "argentina.census-semantic-intent/v1",
       original_question: "¿Cuántas mujeres de 20 a 29 años hay por provincia?",
+      universe_concept: "vp",
       measure: { type: "count", entity_concept: "person" },
       filters: [
         {
