@@ -101,7 +101,7 @@ describe("B4-B6 deterministic compilers", () => {
 
     expect(code).toContain("DEFINE HOGAR.ZZACQSHARE");
     expect(code).toContain("AS SWITCH");
-    expect(code).toContain("INCASE (HOGAR.H22 = 2) ASSIGN 1");
+    expect(code).toContain("INCASE (HOGAR.H22 = 2)\n  ASSIGN 1");
     expect(code).toContain("ELSE 0");
     expect(code).not.toContain("RANGE 0-1");
     expect(code).toContain("AS AVERAGE");
