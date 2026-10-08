@@ -4,12 +4,24 @@ import type { Predicate } from "../contracts/common.js";
 import type { RedatamArtifactSchema } from "../contracts/compilation.js";
 import type { z } from "zod";
 import {
+  CompilationError,
   assertCompilableQuery,
   renderPredicate,
   scalarRedatam,
 } from "./shared.js";
 
 export type RedatamArtifact = z.infer<typeof RedatamArtifactSchema>;
+
+function assertPrivateMarkerAvailable(
+  catalog: CensusCatalog,
+  marker: string,
+): void {
+  if (catalog.variables.some((variable) => variable.id === marker)) {
+    throw new CompilationError(
+      "Redatam compiler-private variable collides with catalog: " + marker,
+    );
+  }
+}
 
 function redatamVariable(ref: string): string {
   return ref;
@@ -63,6 +75,7 @@ export function compileRedatam(
 
   if (query.measure.type === "count") {
     const marker = `${query.measure.entity}.ZZACQCOUNT`;
+    assertPrivateMarkerAvailable(catalog, marker);
     lines.push(
       "",
       `DEFINE ${marker}`,
@@ -89,6 +102,7 @@ export function compileRedatam(
     );
   } else {
     const marker = `${query.measure.entity}.ZZACQSHARE`;
+    assertPrivateMarkerAvailable(catalog, marker);
     lines.push(
       "",
       `DEFINE ${marker}`,
