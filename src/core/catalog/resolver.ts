@@ -6,7 +6,8 @@ import type {
   CensusCatalog,
 } from "../contracts/catalog.js";
 import type { SemanticIntent, IntentPredicate } from "../contracts/semantic-intent.js";
-import type { CensusQuery, Predicate } from "../contracts/census-query.js";
+import type { CensusQuery } from "../contracts/census-query.js";
+import type { Predicate } from "../contracts/common.js";
 import { normalizeCatalogTerm } from "./normalization.js";
 import { validateCensusQuery } from "../validation/query-validator.js";
 
