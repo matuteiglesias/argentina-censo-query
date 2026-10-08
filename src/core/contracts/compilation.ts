@@ -44,6 +44,12 @@ export const IndecWebRecipeSchema = z
   })
   .strict();
 
+export const CompilationTargetSchema = z.discriminatedUnion("target", [
+  SqlArtifactSchema,
+  RedatamArtifactSchema,
+  IndecWebRecipeSchema,
+]);
+
 export const CompilationBundleSchema = z
   .object({
     contract: z.literal("argentina.census-compilation/v1"),
@@ -61,4 +67,5 @@ export const CompilationBundleSchema = z
   .strict();
 
 export type CompilationContext = z.infer<typeof CompilationContextSchema>;
+export type CompilationTarget = z.infer<typeof CompilationTargetSchema>;
 export type CompilationBundle = z.infer<typeof CompilationBundleSchema>;
