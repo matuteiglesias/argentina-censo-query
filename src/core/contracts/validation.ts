@@ -13,6 +13,7 @@ export const QueryValidationIssueCodeSchema = z.enum([
   "operator_not_allowed",
   "invalid_value_type",
   "value_out_of_range",
+  "invalid_range_order",
   "unknown_category_code",
   "average_wrong_grain",
   "average_not_supported",
