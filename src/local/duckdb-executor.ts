@@ -41,7 +41,8 @@ async function createLogicalSchema(
       `SELECT COUNT(*) AS bad
        FROM censo.${name}
        WHERE "XRADIO" IS NULL
-          OR NOT regexp_matches(CAST("XRADIO" AS VARCHAR), '^[0-9]{9}
+          OR NOT regexp_matches(CAST("XRADIO" AS VARCHAR), '^[0-9]{9}$')
+          OR CAST("XRADIO" AS VARCHAR) <> ${sqlLiteral(expectedRadio)}`,
     );
     const rows = check.getRowObjectsJson() as Array<Record<string, unknown>>;
     if (Number(rows[0]?.bad ?? 0) !== 0) {
