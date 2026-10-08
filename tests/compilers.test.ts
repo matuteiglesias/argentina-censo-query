@@ -115,6 +115,12 @@ describe("B4-B6 deterministic compilers", () => {
     );
     expect(countRecipe.steps.join("\n")).toContain("CONTEOSPPART");
     expect(countRecipe.area_breakdown).toBe("Provincia");
+    expect(countRecipe.universe_filter).toContain("PERSONA.P02 = 1");
+    expect(countRecipe.universe_filter).toContain("PERSONA.EDAD >= 20");
+    expect(countRecipe.universe_filter).toContain("PERSONA.EDAD <= 29");
+    expect(countRecipe.steps.join("\n")).toContain(
+      'En "Definición del universo", reproducí este filtro:',
+    );
 
     const variableBreakdown = compileIndecWebRecipe(
       golden("por sexo registrado").expected,
@@ -136,6 +142,7 @@ describe("B4-B6 deterministic compilers", () => {
     );
     expect(shareRecipe.steps.join("\n")).toContain("CONTEOHOG");
     expect(shareRecipe.steps.join("\n")).toContain("/argbin/");
+    expect(shareRecipe.steps.join("\n")).toContain("HOGAR.H22 = 2");
     expect(shareRecipe.output).toContain("Seleccionado / Total");
   });
 
