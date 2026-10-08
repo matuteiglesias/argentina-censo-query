@@ -119,12 +119,14 @@ describe("B4-B6 deterministic compilers", () => {
       CPV2022_VP_CATALOG_V0,
     );
     expect(variableBreakdown.steps.join("\n")).toContain("FREQPOBPART");
+    expect(variableBreakdown.steps.join("\n")).toContain('En "Corte de área", elegí: País.');
 
     const averageRecipe = compileIndecWebRecipe(
       golden("edad promedio").expected,
       CPV2022_VP_CATALOG_V0,
     );
-    expect(averageRecipe.steps.join("\n")).toContain("PROMEDIOSPART");
+    expect(averageRecipe.steps.join("\n")).toContain("PROGVIVPART");
+    expect(averageRecipe.steps.join("\n")).toContain("Código a copiar");
 
     const shareRecipe = compileIndecWebRecipe(
       golden("porcentaje de hogares alquila").expected,
@@ -133,6 +135,21 @@ describe("B4-B6 deterministic compilers", () => {
     expect(shareRecipe.steps.join("\n")).toContain("CONTEOHOG");
     expect(shareRecipe.steps.join("\n")).toContain("/argbin/");
     expect(shareRecipe.output).toContain("Seleccionado / Total");
+  });
+
+  it("does not advertise unsupported live average controls as standard recipes", () => {
+    for (const fragment of [
+      "edad promedio",
+      "tamaño promedio del hogar",
+      "cantidad promedio de hogares",
+    ]) {
+      const recipe = compileIndecWebRecipe(
+        golden(fragment).expected,
+        CPV2022_VP_CATALOG_V0,
+      );
+      expect(recipe.steps.join("\n")).toContain("PROGVIVPART");
+      expect(recipe.steps.join("\n")).not.toContain("PROMEDIOSPART");
+    }
   });
 
   it("fails closed if a source catalog collides with a Redatam private marker", () => {

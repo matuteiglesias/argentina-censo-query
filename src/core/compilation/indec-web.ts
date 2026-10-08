@@ -34,6 +34,11 @@ const AVERAGE_URL =
 const PROGRAM_URL =
   `${ROOT}/CmdSet?BASE=CPV2022&ITEM=PROGVIVPART&lang=ESP`;
 
+// Qualification of PROMEDIOSPART on 2026-10-07 found only these live options.
+// Keep this allowlist narrow so an average is not advertised as a standard
+// recipe unless the current control can represent its variable literally.
+const STANDARD_AVERAGE_VARIABLES = new Set(["HOGAR.TOTPH", "HOGAR.TOTPM"]);
+
 function areaBreakdown(query: CensusQuery): string | null {
   const breakdown = query.breakdowns[0];
   if (!breakdown || breakdown.type !== "geography") return null;
@@ -94,6 +99,7 @@ export function compileIndecWebRecipe(
       steps: [
         `Abrí: ${FREQUENCY_URL[query.universe.entity]}`,
         `En "Seleccione una o más variables", elegí: ${label}.`,
+        'En "Corte de área", elegí: País.',
         'Mantené "Área geográfica" en "Toda la base".',
         universe
           ? `En "Definición del universo", reproducí este filtro: ${universe}`
@@ -129,7 +135,10 @@ export function compileIndecWebRecipe(
     };
   }
 
-  if (query.measure.type === "average") {
+  if (
+    query.measure.type === "average" &&
+    STANDARD_AVERAGE_VARIABLES.has(query.measure.variable)
+  ) {
     const variable = variableLabel(catalog, query.measure.variable);
     const steps = [
       `Abrí: ${AVERAGE_URL}`,

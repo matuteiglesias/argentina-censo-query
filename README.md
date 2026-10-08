@@ -55,7 +55,9 @@ Still requiring the authorized local environment before stronger empirical claim
 
 - B4 against permanent real RADIO 061471101;
 - B5 live RedEngine execution/equivalence against the same RADIO;
-- B6 bounded manual WebServer reproduction smoke.
+- B6 bounded manual WebServer reproduction smoke and a fresh review of the Programa fallback. The 2026-10-07 surface check found that the standard averages page does not expose the current catalog's average variables, so those recipes now fail closed to Programa.
+
+The B6 WebServer surface evidence is recorded in `docs/qualification/B6_INDEC_WEBSERVER.md`; re-review it when the public page changes.
 
 Not implemented yet:
 
