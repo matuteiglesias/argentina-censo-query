@@ -25,7 +25,7 @@ The catalog records evidence references for every entity, variable, category and
 - P02 — sex registered at birth;
 - P06 — current educational attendance;
 - P07 — current educational level;
-- AESC — completed years of schooling;
+- AESC — completed years of schooling, visible but experimental/non-queryable because code 99 means Ignorado and special-value semantics are not modeled yet;
 - HNVUA — recorded as blocked/anomalous, not queryable.
 
 ### HOGAR
@@ -71,3 +71,10 @@ Ambiguous catalog aliases are a catalog error.
 The v0 catalog names `april-2025` as the local source-release basis and separately records the current official Redatam base `CPV2022`.
 
 This is an intersection contract, not a claim that the two releases are byte-identical or schema-identical.
+
+
+## Special-value safety
+
+The official definition for AESC uses code 99 for **Ignorado**. Catalog v0 therefore exposes AESC as evidence-backed metadata but does not allow it in filters, averages or breakdowns yet.
+
+This is deliberate: treating 99 as an ordinary numeric value would make queries such as `AESC >= 12` or `AVERAGE(AESC)` silently wrong. A later contract may model special/missing codes explicitly before promoting this variable.
