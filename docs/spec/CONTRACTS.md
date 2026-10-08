@@ -10,9 +10,11 @@ Concept-level representation intended for a future structured-output model.
 
 It contains semantic concept IDs, literal values and operators, but no raw Census variable identifiers or category codes.
 
-### InterpretationResult
+### Clarification and InterpretationResult
 
-A discriminated union:
+Clarification is a public contract with a bounded reason code, a user-facing prompt and 2–5 explicit options.
+
+InterpretationResult is a discriminated union:
 
 - candidate;
 - needs_clarification;
@@ -41,6 +43,16 @@ Typed semantic/evidence contract containing:
 ### CompilationContext
 
 Names the catalog and source/release assumptions used for compilation. It is intentionally not an execution context because v1 executes nothing.
+
+### CompilationTarget
+
+An explicit discriminated union of exactly three copy targets:
+
+- SQL;
+- Redatam Process;
+- INDEC Web recipe.
+
+It contains no execution/result variant.
 
 ### CompilationBundle
 
@@ -72,6 +84,8 @@ B1 adds three mechanical gates:
 canonicalJson() recursively sorts object keys while preserving array order.
 
 sha256Canonical() supplies stable query, bundle and schema-digest primitives.
+
+stableCanonicalId(prefix, value) derives a deterministic prefixed ID from canonical content. IDs therefore remain stable across object-key order and do not depend on timestamps or process state.
 
 ## Deliberately outside B1
 
