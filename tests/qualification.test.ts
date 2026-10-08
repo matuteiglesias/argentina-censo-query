@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { CensusQuery } from "../src/core/index.js";
 import {
   qualificationForQuery,
   qualificationForTarget,
@@ -13,6 +14,20 @@ function golden(fragment: string) {
   return item.expected;
 }
 
+function query(
+  entity: "VIVIENDA" | "HOGAR" | "PERSONA",
+  measure: CensusQuery["measure"],
+): CensusQuery {
+  return {
+    contract: "argentina.census-query/v1",
+    universe: { database: "VP", entity },
+    measure,
+    filters: [],
+    breakdowns: [],
+    geography_selection: { type: "all" },
+  };
+}
+
 describe("C0 qualification registry", () => {
   it("does not overclaim Redatam SHARE", () => {
     expect(
@@ -23,13 +38,34 @@ describe("C0 qualification registry", () => {
     ).toBe("derived_from_radio_qualified");
   });
 
-  it("marks representative Redatam count/average as radio-qualified", () => {
+  it("marks only exact preserved Redatam cases as radio-qualified", () => {
+    expect(
+      qualificationForTarget(
+        query("PERSONA", { type: "count", entity: "PERSONA" }),
+        "redatam",
+      ).status,
+    ).toBe("radio_qualified");
+
+    expect(
+      qualificationForTarget(
+        query("PERSONA", {
+          type: "average",
+          entity: "PERSONA",
+          variable: "PERSONA.EDAD",
+        }),
+        "redatam",
+      ).status,
+    ).toBe("radio_qualified");
+  });
+
+  it("marks composed golden queries as derived from qualified primitives", () => {
     expect(
       qualificationForTarget(golden("mujeres de 20 a 29"), "redatam").status,
-    ).toBe("radio_qualified");
+    ).toBe("derived_from_radio_qualified");
+
     expect(
       qualificationForTarget(golden("edad promedio"), "redatam").status,
-    ).toBe("radio_qualified");
+    ).toBe("derived_from_radio_qualified");
   });
 
   it("keeps variable-breakdown empirical claims bounded", () => {
