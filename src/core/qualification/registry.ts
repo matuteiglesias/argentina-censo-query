@@ -19,6 +19,7 @@ export type Qualification = {
 
 const B5_EVIDENCE = "docs/qualification/B5_REDATAM_EQUIVALENCE.md";
 const B6_EVIDENCE = "docs/qualification/B6_INDEC_WEBSERVER.md";
+const B7_EVIDENCE = "docs/qualification/B7_CANONICAL_EQUIVALENCE.md";
 const B4_SPEC = "docs/spec/LOCAL_EXECUTION.md";
 
 function hasVariableBreakdown(query: CensusQuery): boolean {
@@ -61,7 +62,7 @@ export function qualificationForTarget(
         claim:
           "SHARE se define como Seleccionado / Total usando dos COUNT Redatam. Los COUNT componentes están calificados en el RADIO permanente; la composición SHARE directa conserva un gate live separado.",
         scope: "RedEngine 1.1.0-final · redatamx 1.1.3 · RADIO 061471101",
-        evidence: [B5_EVIDENCE],
+        evidence: [B5_EVIDENCE, B7_EVIDENCE],
       };
     }
     if (hasVariableBreakdown(query)) {
