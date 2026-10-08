@@ -11,7 +11,8 @@ import {
 import { GOLDEN_QUESTIONS } from "./golden-questions.js";
 
 describe("CensusCatalog v0 golden questions", () => {
-  it.each(GOLDEN_QUESTIONS)("$question", ({ intent, expected }) => {
+  it.each(GOLDEN_QUESTIONS)("$question", ({ question, intent, expected }) => {
+    expect(intent.original_question).toBe(question);
     const resolved = resolveSemanticIntent(intent, CPV2022_VP_CATALOG_V0);
     expect(resolved.status).toBe("resolved");
     if (resolved.status !== "resolved") return;
