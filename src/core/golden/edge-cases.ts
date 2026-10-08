@@ -1,8 +1,10 @@
 import type { InterpretationResult } from "../contracts/interpretation.js";
 
+type EdgeOutcome = Exclude<InterpretationResult, { status: "candidate" }>;
+
 export type GoldenEdgeCase = {
   question: string;
-  expected: InterpretationResult;
+  expected: EdgeOutcome;
 };
 
 export const GOLDEN_EDGE_CASES: GoldenEdgeCase[] = [
