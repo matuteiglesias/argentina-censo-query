@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
+import { sha256Canonical } from "../core/canonical-json.js";
 
 const ENTITIES = ["VIVIENDA", "HOGAR", "PERSONA"] as const;
 const FILE_BY_ENTITY = {
@@ -79,6 +80,24 @@ export async function verifyLocalVpSlice(
     throw new LocalSliceError("dataset_manifest_validation_not_pass");
   }
 
+  const selection = objectField(manifest, "selection");
+  if (selection.entity !== "RADIO") {
+    throw new LocalSliceError("local_executor_requires_RADIO_slice");
+  }
+  if (manifest.identity_scope !== "RADIO" || manifest.scope_field !== "XRADIO") {
+    throw new LocalSliceError("unsupported_local_identity_contract");
+  }
+
+  const semanticHash = manifest.semantic_hash;
+  if (typeof semanticHash !== "string" || semanticHash.length !== 64) {
+    throw new LocalSliceError("invalid_manifest_semantic_hash");
+  }
+  const manifestWithoutHash = { ...manifest };
+  delete manifestWithoutHash.semantic_hash;
+  if (sha256Canonical(manifestWithoutHash) !== semanticHash) {
+    throw new LocalSliceError("dataset_manifest_semantic_hash_mismatch");
+  }
+
   const entities = objectField(manifest, "entities");
   const paths = {
     vivienda: resolve(root, FILE_BY_ENTITY.VIVIENDA),
@@ -114,11 +133,6 @@ export async function verifyLocalVpSlice(
     if (actualHash !== artifact.sha256) {
       throw new LocalSliceError("artifact_hash_mismatch:" + entity);
     }
-  }
-
-  const semanticHash = manifest.semantic_hash;
-  if (typeof semanticHash !== "string" || semanticHash.length !== 64) {
-    throw new LocalSliceError("invalid_manifest_semantic_hash");
   }
 
   return {
