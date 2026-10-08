@@ -8,7 +8,7 @@ One canonical CensusQuery drives:
 2. Redatam Process;
 3. INDEC Redatam WebServer reproduction instructions.
 
-The repository contains the first Next.js product shell and a server-only C3 interpreter seam. GoldenInterpreter remains the default; Google GenAI is opt-in through explicit server configuration.
+The repository contains a server-backed Next.js query interface and a server-only C3 interpreter seam. GoldenInterpreter remains the default; Google GenAI is opt-in through explicit server configuration. Public preview compiles and explains reproducibility; only an explicitly configured local research server can execute verified RADIO aggregates.
 
 ## Architecture
 
@@ -16,7 +16,7 @@ The repository contains the first Next.js product shell and a server-only C3 int
 human question
      │
      ▼
-SemanticIntent         ← future LLM output; concepts only
+SemanticIntent         ← Golden or opt-in LLM output; concepts only
      │
      ▼
 catalog resolution
@@ -55,7 +55,10 @@ Implemented:
 - B8 — 20 supported golden questions + ambiguity/unsupported edge corpus;
 - C0 — query-sensitive capability/evidence registry;
 - C1 — Next.js App Router shell using B8 as a deterministic temporary interpreter.
-- C3 — bounded SemanticInterpreter contract, catalog-derived lexicon, strict Google GenAI adapter, and optional B8 evaluator.
+- C3 — bounded SemanticInterpreter contract, catalog-derived lexicon, strict Google GenAI adapter, and optional B8 evaluator;
+- C4 — one server-side query submission through interpretation, resolution, B3, compilation, qualification and provenance;
+- C5 — opt-in development-only local RADIO aggregates from B4, normalized to CanonicalResult;
+- C6 — server-backed question UI with SQL/Redatam/INDEC reproduction, evidence and local result view.
 
 ### Evidence boundaries
 
@@ -73,16 +76,26 @@ See:
 - `docs/qualification/B6_INDEC_WEBSERVER.md`
 - `docs/qualification/B7_CANONICAL_EQUIVALENCE.md`
 
-## Run the C1 shell
+## Run the compile-only UI
 
 ~~~bash
 npm ci
 npm run dev
 ~~~
 
-C1 recognizes only the product golden corpus. Unknown questions fail visibly instead of being guessed.
+Open http://localhost:3000. With no model configuration, only the 20 B8 golden questions are recognized; unknown questions fail visibly instead of being guessed. The UI submits to POST /api/query, which compiles one validated CensusQuery into three reproducible targets. Execution remains disabled by default and always disabled in production builds.
 
-The web Results panel deliberately does not execute Census microdata. B4 remains a local verified-slice scientific surface.
+## Opt-in local RADIO research mode
+
+Use only on an authorized workstation with a prevalidated VP RADIO slice, and bind the dev server to the loopback interface (do not port-forward it):
+
+~~~bash
+export CENSO_EXECUTION_MODE=local_radio
+export CENSO_LOCAL_SLICE_ROOT=/absolute/path/to/verified/vp/radio
+npm run dev -- --hostname 127.0.0.1
+~~~
+
+The UI exposes a separate Run button only in this mode. POST /api/run takes a validated CensusQuery, never SQL or filesystem paths, and returns a CanonicalResult with verified RADIO identity and dataset-manifest hash. The local result is **not** a national estimate. Loopback Host/Origin checks are defense-in-depth; keep the development server inaccessible from other machines. See docs/spec/C4_C6_PRODUCT_VERTICAL.md.
 
 ## C3 server interpreter
 
@@ -102,7 +115,7 @@ The gate includes:
 
 ## Still deferred
 
-- live-provider C3 evaluation and production deployment;
+- live-provider C3 evaluation, browser E2E and production deployment;
 - hosted/national Census execution;
 - accounts/history;
 - maps/charts;

@@ -58,6 +58,7 @@ export type VerifiedLocalSlice = {
     persona: string;
   };
   manifest_semantic_hash: string;
+  radio_code: string;
 };
 
 export async function verifyLocalVpSlice(
@@ -83,6 +84,9 @@ export async function verifyLocalVpSlice(
   const selection = objectField(manifest, "selection");
   if (selection.entity !== "RADIO") {
     throw new LocalSliceError("local_executor_requires_RADIO_slice");
+  }
+  if (typeof selection.code !== "string" || !/^[0-9]{9}$/.test(selection.code)) {
+    throw new LocalSliceError("invalid_local_RADIO_code");
   }
   if (manifest.identity_scope !== "RADIO" || manifest.scope_field !== "XRADIO") {
     throw new LocalSliceError("unsupported_local_identity_contract");
@@ -139,5 +143,6 @@ export async function verifyLocalVpSlice(
     root,
     paths,
     manifest_semantic_hash: semanticHash,
+    radio_code: selection.code,
   };
 }

@@ -53,3 +53,10 @@ Do not introduce:
 - persistent result storage/history;
 - maps/charts/accounts;
 - source extraction mechanics duplicated from rxdb-extractor.
+
+## C4–C6 product boundary
+
+- `POST /api/query` is the primary user-facing operation. Only the server may resolve, validate and compile; no SQL/code from browser or provider reaches B4.
+- `POST /api/run` is a development-only loopback research surface requiring both `CENSO_EXECUTION_MODE=local_radio` and an absolute `CENSO_LOCAL_SLICE_ROOT`. It must be absent in production mode. Never forward an enabled local dev server to other machines.
+- The run endpoint revalidates a canonical CensusQuery, rechecks slice custody and returns only a CanonicalResult + verified RADIO provenance, never source microdata or source paths.
+- The interpretation response does not prove data execution. Qualification badges must continue to come from the query-sensitive registry.

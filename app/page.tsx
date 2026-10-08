@@ -1,8 +1,8 @@
-import DemoShell from "./components/DemoShell";
-import { buildDemoCases } from "../src/server/demo-model";
+import QueryShell from "./components/QueryShell";
+import { GOLDEN_QUESTIONS } from "../src/core/index.js";
 
 export default function HomePage() {
-  const cases = buildDemoCases();
+  const examples = GOLDEN_QUESTIONS.slice(0, 8).map((item) => item.question);
 
   return (
     <main className="page-shell">
@@ -17,11 +17,11 @@ export default function HomePage() {
         </div>
         <div className="header-status">
           <span className="status-dot" aria-hidden="true" />
-          C1 · shell sin LLM
+          C4–C6 · compilación reproducible
         </div>
       </header>
 
-      <DemoShell cases={cases} />
+      <QueryShell examples={examples} />
 
       <footer>
         Proyecto independiente. No implica aval ni operación por parte de INDEC,
