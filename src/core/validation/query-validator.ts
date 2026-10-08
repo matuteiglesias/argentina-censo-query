@@ -1,5 +1,6 @@
 import type { CensusCatalog, CatalogVariable } from "../contracts/catalog.js";
-import { CensusQuerySchema, type CensusQuery, type Predicate } from "../contracts/census-query.js";
+import { CensusQuerySchema, type CensusQuery } from "../contracts/census-query.js";
+import type { Predicate } from "../contracts/common.js";
 import type {
   QueryValidationIssue,
   QueryValidationResult,
@@ -183,7 +184,9 @@ export function validateCensusQuery(
     );
   }
 
-  if (query.measure.entity !== query.universe.entity) {
+  const measure = query.measure;
+
+  if (measure.entity !== query.universe.entity) {
     issue(
       issues,
       "measure_entity_mismatch",
@@ -192,7 +195,7 @@ export function validateCensusQuery(
     );
   }
 
-  if (query.measure.type === "count") {
+  if (measure.type === "count") {
     if (entity && !entity.supports_count) {
       issue(
         issues,
@@ -203,14 +206,14 @@ export function validateCensusQuery(
     }
   } else if (query.measure.type === "average") {
     const variable = catalog.variables.find(
-      (item) => item.id === query.measure.variable,
+      (item) => item.id === measure.variable,
     );
     if (!variable) {
       issue(
         issues,
         "unknown_variable",
         "measure.variable",
-        `unknown variable ${query.measure.variable}`,
+        `unknown variable ${measure.variable}`,
       );
     } else if (variable.status !== "supported") {
       issue(
@@ -220,7 +223,7 @@ export function validateCensusQuery(
         `${variable.id} has status ${variable.status}`,
       );
     } else {
-      if (variable.entity !== query.measure.entity) {
+      if (variable.entity !== measure.entity) {
         issue(
           issues,
           "average_wrong_grain",
@@ -239,9 +242,9 @@ export function validateCensusQuery(
     }
   } else {
     validatePredicate(
-      query.measure.condition,
+      measure.condition,
       catalog,
-      query.measure.entity,
+      measure.entity,
       "measure.condition",
       issues,
     );
@@ -307,16 +310,17 @@ export function validateCensusQuery(
     }
   });
 
-  if (query.geography_selection.type === "include") {
+  const geographySelection = query.geography_selection;
+  if (geographySelection.type === "include") {
     const geography = catalog.geographies.find(
-      (item) => item.level === query.geography_selection.level,
+      (item) => item.level === geographySelection.level,
     );
     if (!geography) {
       issue(
         issues,
         "unknown_geography_level",
         "geography_selection.level",
-        `unknown geography ${query.geography_selection.level}`,
+        `unknown geography ${geographySelection.level}`,
       );
     } else if (geography.member_coverage === "none") {
       issue(
@@ -327,7 +331,7 @@ export function validateCensusQuery(
       );
     } else {
       const knownCodes = new Set(geography.members.map((member) => member.code));
-      for (const code of query.geography_selection.codes) {
+      for (const code of geographySelection.codes) {
         if (!knownCodes.has(code)) {
           issue(
             issues,
