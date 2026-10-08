@@ -12,25 +12,45 @@ For a successful compilation it may say:
 - SQL, Redatam Process, and INDEC Web instructions were derived from the same canonical query;
 - the compilation targets a named logical schema / Redatam dialect / Web recipe contract.
 
-Later compiler/equivalence testing may support stronger claims, but those claims require preserved evidence.
+For B4 it may additionally say that a compiler-generated SQL query **executed against the explicitly named local slice** when the local executor returns successfully.
+
+That statement is always scoped to those verified input bytes.
 
 ## What the product must not claim
 
-### No statistical result
+### Local execution is not a national Census result
 
-The product does not execute the query, so it cannot claim that a count, share, average, or table is correct.
+A result produced from one RADIO slice is a result for that supplied slice. It must not be presented as an Argentine national statistic.
 
-### No SQL-runtime guarantee yet
+Even a future national local corpus would require separate source-completeness/evidence gates before stronger language.
 
-Copyable SQL targets a documented logical relational schema. Until an execution projection exists and is tested, the UI must not imply that the SQL can be pasted into arbitrary databases unchanged.
+### Cloud B4 tests are not real-source qualification
 
-### No remote-Redatam guarantee
+Cloud CI exercises real Parquet/DuckDB mechanics using synthetic Census-shaped rows. This validates software plumbing, not actual Censo 2022 values.
 
-Generated Redatam Process is a compilation target. v1 does not claim that INDEC's current public WebServer accepts arbitrary Process programs for remote execution.
+The permanent real RADIO gate is separate.
+
+### SQL target has a specific runtime contract
+
+Copyable SQL targets `duckdb-census-logical/v1`.
+
+It expects the logical relations/projection supplied by B4, including canonical keys and projected PROV/DPTO codes. It is not advertised as arbitrary-database SQL.
+
+### Generated Redatam is not yet empirical equivalence
+
+B5 code is generated from documented Redatam Process syntax and the canonical query.
+
+Until representative programs have been executed on the authorized real source and compared to B4 over the same RADIO, the product must not say SQL and Redatam are empirically equivalent.
+
+### No remote-Redatam execution claim
+
+Generated Redatam Process is a compilation target. The repository does not itself submit or execute programs against INDEC.
 
 ### Recipe is not execution
 
-The INDEC recipe describes how the same statistical intent maps to WebServer concepts such as database, entity, area, universe/filter, breakdown and output. It is not proof that the user has executed it.
+The INDEC recipe describes how the same statistical intent maps to current WebServer concepts such as database, entity, area, universe/filter, breakdown and output.
+
+It is not proof that the user executed the recipe, and current-page compatibility is separate from statistical equivalence.
 
 ### VP is not automatically the whole Census
 
@@ -70,12 +90,16 @@ Prefer:
 
 > "SQL generado para el esquema lógico..."
 
+> "Resultado local sobre el slice RADIO indicado..." when B4 actually ran.
+
 Avoid:
 
 > "El Censo dice..."
 
-> "El resultado es..."
+> "El resultado nacional es..." unless separately established.
 
 > "Consulta oficial..."
 
-> "SQL validado contra toda la base..." unless that evidence later exists.
+> "SQL y Redatam validados como equivalentes..." until the live differential gate passes.
+
+> "INDEC ejecutó esta consulta..." when only a recipe was generated.
