@@ -131,7 +131,38 @@ describe("B4-B6 deterministic compilers", () => {
       CPV2022_VP_CATALOG_V0,
     );
     expect(shareRecipe.steps.join("\n")).toContain("CONTEOHOG");
+    expect(shareRecipe.steps.join("\n")).toContain("/argbin/");
     expect(shareRecipe.output).toContain("Seleccionado / Total");
+  });
+
+  it("fails closed if a source catalog collides with a Redatam private marker", () => {
+    const catalog = structuredClone(CPV2022_VP_CATALOG_V0);
+    catalog.variables.push({
+      id: "PERSONA.ZZACQCOUNT",
+      source_identifier: "ZZACQCOUNT",
+      source_alias: null,
+      entity: "PERSONA",
+      universe_id: "vp",
+      label: "Collision fixture",
+      value_type: "integer",
+      range: { min: 0, max: 1 },
+      concepts: ["collision-fixture"],
+      aliases: [],
+      allowed_operators: ["eq"],
+      supports_average: false,
+      supports_breakdown: false,
+      status: "supported",
+      category_coverage: "none",
+      anomaly: null,
+      evidence_ids: ["project-relational-schema"],
+    });
+
+    expect(() =>
+      compileRedatam(
+        golden("mujeres de 20 a 29").expected,
+        catalog,
+      ),
+    ).toThrow(/compiler-private variable collides/);
   });
 
   it("fails before compilation when a plausible query violates B3", () => {
