@@ -4,8 +4,10 @@ import { contractSchemaDigests } from "../src/core/index.js";
 const EXPECTED_SCHEMA_DIGESTS = {
   CensusCatalog: "__PENDING__",
   CensusQuery: "__PENDING__",
+  Clarification: "__PENDING__",
   CompilationBundle: "__PENDING__",
   CompilationContext: "__PENDING__",
+  CompilationTarget: "__PENDING__",
   InterpretationResult: "__PENDING__",
   QueryValidationResult: "__PENDING__",
   SemanticIntent: "__PENDING__",
