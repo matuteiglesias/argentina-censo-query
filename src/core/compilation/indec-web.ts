@@ -40,19 +40,6 @@ function areaBreakdown(query: CensusQuery): string | null {
   return breakdown.level === "PROV" ? "Provincia" : "Departamento";
 }
 
-function universeText(query: CensusQuery): string | null {
-  if (query.filters.length === 0 && query.geography_selection.type === "all") {
-    return null;
-  }
-  const redatam = compileRedatam(query, {
-    // This argument is never consulted because query is already validated by caller;
-    // passing a catalog here would recurse validation. universeText is filled below
-    // by extracting the RUNDEF expression from the real artifact in compileIndecWebRecipe.
-  } as CensusCatalog);
-  const match = redatam.code.match(/^\s*UNIVERSE\s+(.+)$/m);
-  return match?.[1] ?? null;
-}
-
 function redatamUniverseFromArtifact(code: string): string | null {
   const match = code.match(/^\s*UNIVERSE\s+(.+)$/m);
   return match?.[1] ?? null;
