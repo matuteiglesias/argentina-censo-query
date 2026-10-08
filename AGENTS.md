@@ -19,6 +19,9 @@ It consumes facts/contracts from the Census adapter and generic RXDB extractor, 
 9. The core under src/core must not depend on Next.js, React, an AI SDK, a model provider, DuckDB, or local filesystem state.
 10. Do not present cloud/synthetic qualification as real-source equivalence.
 11. Do not imply INDEC endorsement or official validation.
+12. CanonicalResult is the only cross-engine equality surface; compare normalized statistical values, not target-language strings.
+13. Product/UI qualification badges must come from src/core/qualification/registry.ts. Do not hard-code a stronger claim in React or prose.
+14. The C1 GoldenInterpreter is temporary deterministic scaffolding. It must never silently generalize unknown natural-language questions.
 
 ## Contract changes
 
