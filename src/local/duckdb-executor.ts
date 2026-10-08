@@ -1,8 +1,9 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 import type { CensusCatalog } from "../core/contracts/catalog.js";
 import { compileSql } from "../core/compilation/sql.js";
+import { assertCompilableQuery } from "../core/compilation/shared.js";
 import { stableCanonicalId } from "../core/canonical-json.js";
-import { verifyLocalVpSlice } from "./slice-verifier.js";
+import { LocalSliceError, verifyLocalVpSlice } from "./slice-verifier.js";
 
 export type LocalQueryRow = Record<string, unknown>;
 
@@ -42,7 +43,7 @@ async function createLogicalSchema(
     );
     const rows = check.getRowObjectsJson() as Array<Record<string, unknown>>;
     if (Number(rows[0]?.bad ?? 0) !== 0) {
-      throw new Error(`invalid_XRADIO:${name}`);
+      throw new LocalSliceError(`invalid_XRADIO:${name}`);
     }
   }
 }
@@ -53,7 +54,8 @@ export async function executeLocalVpQuery(
   catalog: CensusCatalog,
 ): Promise<LocalExecutionResult> {
   const verified = await verifyLocalVpSlice(sliceRoot);
-  const sql = compileSql(queryInput, catalog);
+  const query = assertCompilableQuery(queryInput, catalog);
+  const sql = compileSql(query, catalog);
   const instance = await DuckDBInstance.create(":memory:", {
     threads: "1",
   });
@@ -67,7 +69,7 @@ export async function executeLocalVpQuery(
       throw new Error("local_result_row_limit_exceeded");
     }
 
-    const queryId = stableCanonicalId("cq", queryInput);
+    const queryId = stableCanonicalId("cq", query);
     return {
       contract: "argentina.census-local-execution/v1",
       execution_id: stableCanonicalId("exec", {
