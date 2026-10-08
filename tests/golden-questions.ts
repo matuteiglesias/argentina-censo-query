@@ -101,7 +101,7 @@ function query(
   };
 }
 
-export const GOLDEN_QUESTIONS: Array<{
+const RAW_GOLDEN_QUESTIONS: Array<{
   question: string;
   intent: SemanticIntent;
   expected: CensusQuery;
@@ -445,3 +445,12 @@ export const GOLDEN_QUESTIONS: Array<{
     ),
   },
 ];
+
+export const GOLDEN_QUESTIONS = RAW_GOLDEN_QUESTIONS.map(
+  ({ question, intent, expected }) => ({
+    question,
+    intent: { ...intent, original_question: question },
+    expected,
+  }),
+);
+
