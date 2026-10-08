@@ -1,4 +1,4 @@
-# B5 RedEngine equivalence qualification
+> **Historical B5 qualification note:** this report preserves the failed direct SHARE-via-SWITCH experiment. That implementation is no longer the supported SHARE target. B7 replaces it with selected/total COUNT composition; see `docs/qualification/B7_CANONICAL_EQUIVALENCE.md`. The 9 passing COUNT/AVERAGE/filter/geography cases remain active evidence for the primitives used by B7.\n\n# B5 RedEngine equivalence qualification
 
 Status: **BLOCKERS** — the tested subset is not qualified as a complete B5 surface.
 
