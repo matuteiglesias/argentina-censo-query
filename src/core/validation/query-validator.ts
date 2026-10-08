@@ -78,6 +78,20 @@ function validatePredicate(
     );
   }
   validateValues(variable, valuesOf(predicate), catalog, path + ".value", issues);
+
+  if (
+    predicate.operator === "between" &&
+    typeof predicate.value[0] === "number" &&
+    typeof predicate.value[1] === "number" &&
+    predicate.value[0] > predicate.value[1]
+  ) {
+    issue(
+      issues,
+      "invalid_range_order",
+      path + ".value",
+      "between lower bound must be <= upper bound",
+    );
+  }
 }
 
 function validateValues(
