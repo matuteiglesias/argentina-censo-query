@@ -87,6 +87,26 @@ describe("query validator", () => {
     ).toContain("value_out_of_range");
   });
 
+  it("rejects reversed numeric ranges", () => {
+    expect(
+      issueCodes({
+        ...base,
+        filters: [
+          { variable: "PERSONA.EDAD", operator: "between", value: [29, 20] },
+        ],
+      }),
+    ).toContain("invalid_range_order");
+  });
+
+  it("fails closed on experimental variables with unresolved special codes", () => {
+    expect(
+      issueCodes({
+        ...base,
+        filters: [{ variable: "PERSONA.AESC", operator: "gte", value: 12 }],
+      }),
+    ).toContain("variable_not_supported");
+  });
+
   it("rejects averaging an ancestor variable at person grain", () => {
     expect(
       issueCodes({
