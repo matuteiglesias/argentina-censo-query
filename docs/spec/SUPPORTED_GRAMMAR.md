@@ -79,7 +79,7 @@ The last example is only supported when the predicate traverses a validated ance
 
 ## Explicitly deferred
 
-- descendant-derived predicates such as "hogares con cinco o más personas";
+- descendant-derived predicates that require computing a new child aggregate at query time; a stored source variable such as `HOGAR.TOTPOBH` may support the same ordinary-language question without a derived aggregate;
 - arbitrary derived indicators;
 - arbitrary joins;
 - raw SQL fragments;
