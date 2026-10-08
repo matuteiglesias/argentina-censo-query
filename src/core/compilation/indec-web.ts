@@ -95,6 +95,7 @@ export function compileIndecWebRecipe(
         `Abrí: ${FREQUENCY_URL[query.universe.entity]}`,
         `En "Seleccione una o más variables", elegí: ${label}.`,
         'Mantené "Área geográfica" en "Toda la base".',
+        'En "Corte de área", elegí: País.',
         universe
           ? `En "Definición del universo", reproducí este filtro: ${universe}`
           : 'Mantené "Definición del universo" en "(toda la base)".',
@@ -130,38 +131,7 @@ export function compileIndecWebRecipe(
   }
 
   if (query.measure.type === "average") {
-    const variable = variableLabel(catalog, query.measure.variable);
-    const steps = [
-      `Abrí: ${AVERAGE_URL}`,
-      `En "Promedios de", elegí: ${variable}.`,
-    ];
-    if (breakdown?.type === "variable") {
-      steps.push(
-        `En "Por (fila)", elegí: ${variableLabel(catalog, breakdown.variable)}.`,
-      );
-    } else if (geo) {
-      steps.push(`En "Corte de área", elegí: ${geo}.`);
-    } else {
-      steps.push('En "Corte de área", elegí: País.');
-    }
-    steps.push(
-      'Mantené "Área geográfica" en "Toda la base".',
-      universe
-        ? `En "Definición del universo", reproducí este filtro: ${universe}`
-        : 'Mantené "Definición del universo" en "(toda la base)".',
-      'Elegí "Tabla" y ejecutá manualmente.',
-    );
-    return {
-      target: "indec_web_recipe",
-      contract: "indec-redatam-web-recipe/v1",
-      database: "Censo 2022 · Viviendas particulares (CPV2022)",
-      entity: query.universe.entity,
-      area: "Toda la base",
-      area_breakdown: geo,
-      universe_filter: universe,
-      output: "Tabla · promedio",
-      steps,
-    };
+    return programFallback(query, redatam.code, universe);
   }
 
   if (
@@ -169,7 +139,9 @@ export function compileIndecWebRecipe(
     (query.universe.entity === "PERSONA" || query.universe.entity === "HOGAR") &&
     (!breakdown || breakdown.type === "geography")
   ) {
-    const condition = redatam.code.match(/INCASE \((.+)\) ASSIGN 1/)?.[1];
+    const condition = redatam.code.match(
+      /INCASE \((.+)\)\s*\n\s*ASSIGN 1/,
+    )?.[1];
     if (!condition) return programFallback(query, redatam.code, universe);
     return {
       target: "indec_web_recipe",
