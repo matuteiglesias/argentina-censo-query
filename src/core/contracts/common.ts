@@ -19,7 +19,10 @@ export type ScalarValue = z.infer<typeof ScalarValueSchema>;
 export const ConceptIdSchema = z
   .string()
   .min(1)
-  .regex(/^[a-z0-9][a-z0-9._-]*$/, "concept IDs must be canonical lowercase slugs");
+  .regex(
+    /^[a-z0-9][a-z0-9-]*$/,
+    "concept IDs must be canonical lowercase slugs without Census identifier syntax",
+  );
 export type ConceptId = z.infer<typeof ConceptIdSchema>;
 
 export const VariableRefSchema = z
