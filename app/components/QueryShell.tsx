@@ -230,6 +230,18 @@ export default function QueryShell({ examples }: { examples: string[] }) {
   const runSequence = useRef(0);
   const controller = useRef<AbortController | null>(null);
 
+  function editQuestion(value: string) {
+    // A visible result must never silently belong to a previous form value.
+    ++requestSequence.current;
+    ++runSequence.current;
+    controller.current?.abort();
+    setQuestion(value);
+    setSubmission(null);
+    setRunState(null);
+    setError(null);
+    setBusy(false);
+  }
+
   async function ask(value: string) {
     const id = ++requestSequence.current;
     ++runSequence.current;
@@ -309,7 +321,7 @@ export default function QueryShell({ examples }: { examples: string[] }) {
               id="question"
               list="golden-questions"
               value={question}
-              onChange={(event) => setQuestion(event.target.value)}
+              onChange={(event) => editQuestion(event.target.value)}
               placeholder="Ej.: ¿Cuántas mujeres de 20 a 29 años hay por provincia?"
               maxLength={1000}
             />
