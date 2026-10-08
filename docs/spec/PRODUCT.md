@@ -8,7 +8,7 @@ Working user-facing description: **Consultá el Censo 2022**.
 
 The product accepts one natural-language statistical question about the Argentine 2022 Census and helps a user formalize that question transparently.
 
-Its successful output is a **compilation bundle**, not a statistical answer.
+Its primary successful output is a **compilation bundle**, not a statistical answer.
 
 ## Input
 
@@ -41,14 +41,18 @@ Natural-language question
      ┌────┼─────────────┐
      ▼    ▼             ▼
     SQL  Redatam    INDEC Web
-   copy   copy         recipe
+     │    copy         recipe
+     │
+     └── optional B4 local qualification
+         verified VP RADIO Parquet
+         in-memory DuckDB
 ~~~
 
 ### Authority
 
 CensusQuery is the sole authoritative interpretation of statistical meaning.
 
-SQL, Redatam Process, and the INDEC WebServer recipe are derived representations. They may never be interpreted independently and then reconciled after the fact.
+SQL, Redatam Process, the INDEC WebServer recipe, and B4 local execution are downstream projections/uses of that same query. They may never be interpreted independently and reconciled after the fact.
 
 ## Product outcomes
 
@@ -60,11 +64,11 @@ A question has exactly one of three semantic outcomes:
 
 Only a resolved and validated candidate can become a CensusQuery.
 
-## Successful experience
+## Successful public experience
 
 For a valid question the user sees:
 
-- the interpreted universe;
+- interpreted universe;
 - measure;
 - filters;
 - breakdown;
@@ -75,21 +79,28 @@ For a valid question the user sees:
 
 The interpretation is shown before target code because semantic transparency is the primary product property.
 
-## No execution
+## Local execution is a separate qualification surface
 
-v1 ends at compilation.
+B4 is authorized as local scientific/development infrastructure.
 
-It does not:
+It may execute only deterministic compiler-produced SQL against an explicitly supplied, verified VP RADIO slice. It is intended to:
 
-- execute generated SQL;
-- connect to DuckDB, BigQuery, Postgres, or another database;
-- execute Redatam locally;
-- submit Redatam programs to INDEC;
+- test SQL semantics against known permanent laboratories;
+- support future SQL ↔ Redatam differential validation;
+- make compiler regressions observable.
+
+B4 is **not** authorization for a hosted national Census database, arbitrary SQL, public microdata access, or result-serving product.
+
+## No Redatam/INDEC remote execution
+
+The repository still does not:
+
+- execute Redatam programs itself;
+- submit programs or forms to INDEC;
 - scrape INDEC results;
-- store Census microdata;
-- return counts, percentages, means, maps, or charts.
+- treat the public WebServer as an API.
 
-A later execution layer may consume the same CensusQuery, but execution is not part of this contract.
+B5 and B6 stop at code/instructions.
 
 ## Layer ownership
 
@@ -106,6 +117,7 @@ argentina-censo-query
   CensusQuery
   validation/resolution
   analytical target compilers
+  bounded local query qualification
   product UI
 ~~~
 
@@ -119,4 +131,4 @@ A user request for "all people counted by the Census" must not silently collapse
 
 ## Future UI assumption
 
-The anticipated application stack is Next.js + TypeScript, but framework choice is deliberately downstream of the core contracts. The semantic core remains ordinary TypeScript and can be tested without a browser or server.
+The anticipated application stack is Next.js + TypeScript, but framework choice remains downstream of the core contracts. The semantic core is ordinary TypeScript and can be tested without a browser or server.
