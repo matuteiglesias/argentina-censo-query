@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contractSchemaDigests } from "../src/core/index.js";
 
 const EXPECTED_SCHEMA_DIGESTS = {
-  CanonicalResult: "__PENDING__",
+  CanonicalResult: "1582b6f3bf496bb4e4c3f3bf7c7c0d55a7d1f4b031ce7c2dfbf8a7c5bfbd29b1",
   CensusCatalog: "cadf73cc14840f6993e81b930212beef55fad4624431e783234a28be31a14197",
   CensusQuery: "c70e61fae2268d69ddde49e194096ad9b100bed6b18cf609b26aa6545371628d",
   Clarification: "edeef0735f47b5adde5d619a4258f9675fbd7fe20f6db97bc9ec83f872345f45",
