@@ -37,13 +37,15 @@ describe("SemanticIntent", () => {
   });
 
   it("rejects Census identifiers as semantic concept IDs", () => {
-    expect(() =>
-      SemanticIntentSchema.parse({
-        contract: "argentina.census-semantic-intent/v1",
-        original_question: "x",
-        measure: { type: "count", entity_concept: "PERSONA.P02" },
-      }),
-    ).toThrow();
+    for (const rawConcept of ["PERSONA.P02", "persona.p02", "persona_p02"]) {
+      expect(() =>
+        SemanticIntentSchema.parse({
+          contract: "argentina.census-semantic-intent/v1",
+          original_question: "x",
+          measure: { type: "count", entity_concept: rawConcept },
+        }),
+      ).toThrow();
+    }
   });
 });
 
@@ -139,54 +141,71 @@ describe("CensusCatalog", () => {
 });
 
 describe("CompilationBundle", () => {
-  it("requires all three copy targets and no execution result", () => {
-    const bundle = CompilationBundleSchema.parse({
-      contract: "argentina.census-compilation/v1",
-      original_question: "¿Cuántas personas hay?",
-      interpretation_summary: "Cantidad de personas en VP.",
-      query: {
-        contract: "argentina.census-query/v1",
-        universe: { database: "VP", entity: "PERSONA" },
-        measure: { type: "count", entity: "PERSONA" },
-        filters: [],
-        breakdowns: [],
-        geography_selection: { type: "all" },
-      },
-      context: {
-        contract: "argentina.census-compilation-context/v1",
-        catalog_id: "catalog-fixture",
-        census_vintage: 2022,
-        source_database: "VP",
-        source_release_label: "fixture",
+  const validBundle = {
+    contract: "argentina.census-compilation/v1",
+    original_question: "¿Cuántas personas hay?",
+    query: {
+      contract: "argentina.census-query/v1",
+      universe: { database: "VP", entity: "PERSONA" },
+      measure: { type: "count", entity: "PERSONA" },
+      filters: [],
+      breakdowns: [],
+      geography_selection: { type: "all" },
+    },
+    context: {
+      contract: "argentina.census-compilation-context/v1",
+      catalog_id: "catalog-fixture",
+      census_vintage: 2022,
+      source_database: "VP",
+      source_release_label: "fixture",
+      logical_schema: "argentina.censo2022-relational/v1",
+    },
+    targets: {
+      sql: {
+        target: "sql",
+        dialect: "duckdb-census-logical/v1",
         logical_schema: "argentina.censo2022-relational/v1",
+        code: "SELECT COUNT(*) FROM censo.persona;",
       },
-      targets: {
-        sql: {
-          target: "sql",
-          dialect: "duckdb-census-logical/v1",
-          logical_schema: "argentina.censo2022-relational/v1",
-          code: "SELECT COUNT(*) FROM censo.persona;",
-        },
-        redatam_process: {
-          target: "redatam_process",
-          dialect: "redatam-process/v1",
-          code: "RUNDEF QUERY",
-        },
-        indec_web: {
-          target: "indec_web_recipe",
-          contract: "indec-redatam-web-recipe/v1",
-          database: "Censo 2022",
-          entity: "PERSONA",
-          area: "Toda la base",
-          area_breakdown: null,
-          universe_filter: null,
-          output: "Cantidad",
-          steps: ["Seleccionar PERSONA"],
-        },
+      redatam_process: {
+        target: "redatam_process",
+        dialect: "redatam-process/v1",
+        code: "RUNDEF QUERY",
       },
-    });
+      indec_web: {
+        target: "indec_web_recipe",
+        contract: "indec-redatam-web-recipe/v1",
+        database: "Censo 2022",
+        entity: "PERSONA",
+        area: "Toda la base",
+        area_breakdown: null,
+        universe_filter: null,
+        output: "Cantidad",
+        steps: ["Seleccionar PERSONA"],
+      },
+    },
+  };
 
+  it("requires all three copy targets and contains no second semantic summary", () => {
+    const bundle = CompilationBundleSchema.parse(validBundle);
     expect("result" in bundle).toBe(false);
+    expect("interpretation_summary" in bundle).toBe(false);
+  });
+
+  it("rejects execution results or free semantic summaries", () => {
+    expect(() =>
+      CompilationBundleSchema.parse({
+        ...validBundle,
+        result: { rows: [] },
+      }),
+    ).toThrow();
+
+    expect(() =>
+      CompilationBundleSchema.parse({
+        ...validBundle,
+        interpretation_summary: "free text",
+      }),
+    ).toThrow();
   });
 });
 
