@@ -6,7 +6,11 @@ import {
   assertCompilableQuery,
   variableLabel,
 } from "./shared.js";
-import { compileRedatam } from "./redatam.js";
+import {
+  compileRedatam,
+  renderRedatamFilterExpression,
+  renderRedatamPredicate,
+} from "./redatam.js";
 
 export type IndecWebRecipe = z.infer<typeof IndecWebRecipeSchema>;
 
@@ -45,11 +49,6 @@ function areaBreakdown(query: CensusQuery): string | null {
   return breakdown.level === "PROV" ? "Provincia" : "Departamento";
 }
 
-function redatamUniverseFromArtifact(code: string): string | null {
-  const match = code.match(/^\s*UNIVERSE\s+(.+)$/m);
-  return match?.[1] ?? null;
-}
-
 function programFallback(
   query: CensusQuery,
   redatamCode: string,
@@ -81,7 +80,7 @@ export function compileIndecWebRecipe(
 ): IndecWebRecipe {
   const query = assertCompilableQuery(input, catalog);
   const redatam = compileRedatam(query, catalog);
-  const universe = redatamUniverseFromArtifact(redatam.code);
+  const universe = renderRedatamFilterExpression(query) ?? null;
   const breakdown = query.breakdowns[0];
   const geo = areaBreakdown(query);
 
@@ -178,10 +177,7 @@ export function compileIndecWebRecipe(
     (query.universe.entity === "PERSONA" || query.universe.entity === "HOGAR") &&
     (!breakdown || breakdown.type === "geography")
   ) {
-    const condition = redatam.code.match(
-      /INCASE \((.+)\)\s*\n\s*ASSIGN 1/,
-    )?.[1];
-    if (!condition) return programFallback(query, redatam.code, universe);
+    const condition = renderRedatamPredicate(query.measure.condition);
     return {
       target: "indec_web_recipe",
       contract: "indec-redatam-web-recipe/v1",
