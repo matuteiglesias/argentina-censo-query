@@ -54,10 +54,10 @@ SHARE is represented by a deterministic 0/1 variable and the mean of that variab
 ~~~text
 DEFINE HOGAR.ZZACQSHARE
   AS SWITCH
-  INCASE (HOGAR.H22 = 2) ASSIGN 1
+  INCASE (HOGAR.H22 = 2)
+  ASSIGN 1
   ELSE 0
   TYPE INTEGER
-  RANGE 0-1
 
 TABLE ACQ_RESULT
   AS AVERAGE
@@ -82,6 +82,12 @@ This is separate from B4's local `XRADIO` prefix projection. Both are projection
 Every current golden CensusQuery produces deterministic Redatam source, and unit tests pin the important COUNT/AVERAGE/SHARE forms.
 
 That is a **compiler gate**, not a live RedEngine equivalence gate.
+
+## RedEngine 1.1 compatibility note
+
+The first live qualification found that RedEngine 1.1.0-final rejected a same-line `INCASE (...) ASSIGN 1` form for SHARE. The compiler now emits the test and assignment as separate statements, matching documented SWITCH examples used by older Redatam runtimes.
+
+A dedicated opt-in gate in `tests/b5-share-live.test.ts` compares the resulting RedEngine SHARE value directly with B4 on RADIO 061471101.
 
 ## Local qualification still required
 
