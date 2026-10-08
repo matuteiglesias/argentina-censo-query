@@ -4,7 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DuckDBInstance } from "@duckdb/node-api";
 import { afterEach, describe, expect, it } from "vitest";
-import { CPV2022_VP_CATALOG_V0 } from "../src/core/index.js";
+import {
+  CPV2022_VP_CATALOG_V0,
+  sha256Canonical,
+} from "../src/core/index.js";
 import {
   LocalSliceError,
   executeLocalVpQuery,
@@ -69,10 +72,12 @@ async function makeSlice(): Promise<string> {
       ) TO ${quote(persona)} (FORMAT PARQUET)
     `);
 
-    const manifest = {
+    const manifest: Record<string, unknown> = {
       manifest_version: "1",
+      selection: { entity: "RADIO", code: "061471101" },
+      identity_scope: "RADIO",
+      scope_field: "XRADIO",
       validation_status: "pass",
-      semantic_hash: "a".repeat(64),
       entities: {
         VIVIENDA: {
           artifact: { path: "vivienda.parquet", sha256: await sha256(vivienda) },
@@ -85,6 +90,7 @@ async function makeSlice(): Promise<string> {
         },
       },
     };
+    manifest.semantic_hash = sha256Canonical(manifest);
     await writeFile(
       join(root, "dataset-manifest.json"),
       JSON.stringify(manifest),
@@ -112,7 +118,7 @@ describe("B4 local DuckDB executor", () => {
     const root = await makeSlice();
     const verified = await verifyLocalVpSlice(root);
     expect(verified.root).toBe(root);
-    expect(verified.manifest_semantic_hash).toBe("a".repeat(64));
+    expect(verified.manifest_semantic_hash).toHaveLength(64);
   });
 
   it("executes the compiled SQL for a person count on synthetic radio Parquet", async () => {
