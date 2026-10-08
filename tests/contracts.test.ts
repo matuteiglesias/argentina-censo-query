@@ -46,6 +46,7 @@ describe("SemanticIntent", () => {
         SemanticIntentSchema.parse({
           contract: "argentina.census-semantic-intent/v1",
           original_question: "x",
+          universe_concept: "vp",
           measure: { type: "count", entity_concept: rawConcept },
         }),
       ).toThrow();
