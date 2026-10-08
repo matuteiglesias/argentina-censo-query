@@ -1,0 +1,206 @@
+import { describe, expect, it } from "vitest";
+import {
+  CensusCatalogSchema,
+  CensusQuerySchema,
+  CompilationBundleSchema,
+  InterpretationResultSchema,
+  SemanticIntentSchema,
+  canonicalJson,
+  sha256Canonical,
+} from "../src/core/index.js";
+
+describe("SemanticIntent", () => {
+  it("accepts concepts and literals without Census identifiers", () => {
+    const parsed = SemanticIntentSchema.parse({
+      contract: "argentina.census-semantic-intent/v1",
+      original_question: "¿Cuántas mujeres de 20 a 29 años hay por provincia?",
+      measure: { type: "count", entity_concept: "person" },
+      filters: [
+        {
+          variable_concept: "sex",
+          operator: "eq",
+          value: { kind: "concept", concept: "woman" },
+        },
+        {
+          variable_concept: "age",
+          operator: "between",
+          value: [
+            { kind: "literal", value: 20 },
+            { kind: "literal", value: 29 },
+          ],
+        },
+      ],
+      breakdown: { type: "geography", concept: "province" },
+    });
+
+    expect(parsed.measure.type).toBe("count");
+  });
+
+  it("rejects Census identifiers as semantic concept IDs", () => {
+    expect(() =>
+      SemanticIntentSchema.parse({
+        contract: "argentina.census-semantic-intent/v1",
+        original_question: "x",
+        measure: { type: "count", entity_concept: "PERSONA.P02" },
+      }),
+    ).toThrow();
+  });
+});
+
+describe("InterpretationResult", () => {
+  it("treats clarification as a first-class outcome", () => {
+    const parsed = InterpretationResultSchema.parse({
+      status: "needs_clarification",
+      original_question: "¿Cuántos universitarios hay?",
+      reason_code: "ambiguous_concept",
+      prompt: "¿Qué querés decir con universitarios?",
+      options: [
+        { id: "currently-attending-university", label: "Asisten actualmente" },
+        { id: "highest-level-university", label: "Máximo nivel alcanzado" },
+      ],
+    });
+
+    expect(parsed.status).toBe("needs_clarification");
+  });
+});
+
+describe("CensusQuery", () => {
+  const query = {
+    contract: "argentina.census-query/v1",
+    universe: { database: "VP", entity: "PERSONA" },
+    measure: { type: "count", entity: "PERSONA" },
+    filters: [
+      { variable: "PERSONA.P02", operator: "eq", value: 2 },
+      { variable: "PERSONA.EDAD", operator: "between", value: [20, 29] },
+    ],
+    breakdowns: [{ type: "geography", level: "PROV" }],
+    geography_selection: { type: "all" },
+  } as const;
+
+  it("accepts a resolved women-age-province query", () => {
+    expect(CensusQuerySchema.parse(query)).toEqual(query);
+  });
+
+  it("rejects more than one v1 breakdown", () => {
+    expect(() =>
+      CensusQuerySchema.parse({
+        ...query,
+        breakdowns: [
+          { type: "geography", level: "PROV" },
+          { type: "variable", variable: "PERSONA.P02" },
+        ],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects arbitrary variable expressions", () => {
+    expect(() =>
+      CensusQuerySchema.parse({
+        ...query,
+        filters: [{ variable: "DROP TABLE X", operator: "eq", value: 1 }],
+      }),
+    ).toThrow();
+  });
+});
+
+describe("CensusCatalog", () => {
+  it("defines typed future B1 catalog contents including anomalies", () => {
+    const catalog = CensusCatalogSchema.parse({
+      contract: "argentina.census-catalog/v1",
+      catalog_id: "arg-cpv2022-vp-test",
+      census_vintage: 2022,
+      database: "VP",
+      source_release_label: "fixture",
+      entities: [
+        {
+          id: "PERSONA",
+          label: "Persona",
+          concepts: ["person"],
+        },
+      ],
+      variables: [
+        {
+          id: "PERSONA.HNVUA",
+          entity: "PERSONA",
+          label: "HNVUA",
+          value_type: "integer",
+          concepts: ["children-born-alive"],
+          allowed_operators: ["eq"],
+          status: "blocked",
+          anomaly: "known name/alias ambiguity in qualified runtimes",
+        },
+      ],
+      categories: [],
+      geographies: [],
+    });
+
+    expect(catalog.variables[0]?.status).toBe("blocked");
+  });
+});
+
+describe("CompilationBundle", () => {
+  it("requires all three copy targets and no execution result", () => {
+    const bundle = CompilationBundleSchema.parse({
+      contract: "argentina.census-compilation/v1",
+      original_question: "¿Cuántas personas hay?",
+      interpretation_summary: "Cantidad de personas en VP.",
+      query: {
+        contract: "argentina.census-query/v1",
+        universe: { database: "VP", entity: "PERSONA" },
+        measure: { type: "count", entity: "PERSONA" },
+        filters: [],
+        breakdowns: [],
+        geography_selection: { type: "all" },
+      },
+      context: {
+        contract: "argentina.census-compilation-context/v1",
+        catalog_id: "catalog-fixture",
+        census_vintage: 2022,
+        source_database: "VP",
+        source_release_label: "fixture",
+        logical_schema: "argentina.censo2022-relational/v1",
+      },
+      targets: {
+        sql: {
+          target: "sql",
+          dialect: "duckdb-census-logical/v1",
+          logical_schema: "argentina.censo2022-relational/v1",
+          code: "SELECT COUNT(*) FROM censo.persona;",
+        },
+        redatam_process: {
+          target: "redatam_process",
+          dialect: "redatam-process/v1",
+          code: "RUNDEF QUERY",
+        },
+        indec_web: {
+          target: "indec_web_recipe",
+          contract: "indec-redatam-web-recipe/v1",
+          database: "Censo 2022",
+          entity: "PERSONA",
+          area: "Toda la base",
+          area_breakdown: null,
+          universe_filter: null,
+          output: "Cantidad",
+          steps: ["Seleccionar PERSONA"],
+        },
+      },
+    });
+
+    expect("result" in bundle).toBe(false);
+  });
+});
+
+describe("canonical JSON", () => {
+  it("is stable across object key order", () => {
+    const left = { b: 2, a: { y: 2, x: 1 } };
+    const right = { a: { x: 1, y: 2 }, b: 2 };
+    expect(canonicalJson(left)).toBe(canonicalJson(right));
+    expect(sha256Canonical(left)).toBe(sha256Canonical(right));
+  });
+
+  it("preserves array order", () => {
+    expect(canonicalJson({ x: [2, 1] })).not.toBe(
+      canonicalJson({ x: [1, 2] }),
+    );
+  });
+});
