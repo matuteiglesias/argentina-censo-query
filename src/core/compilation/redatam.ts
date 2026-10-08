@@ -27,7 +27,7 @@ function redatamVariable(ref: string): string {
   return ref;
 }
 
-function redatamPredicate(predicate: Predicate): string {
+export function renderRedatamPredicate(predicate: Predicate): string {
   return renderPredicate(
     predicate,
     redatamVariable,
@@ -48,7 +48,9 @@ function breakdownVariable(query: CensusQuery): string | undefined {
     : breakdown.variable;
 }
 
-function universeExpression(query: CensusQuery): string | undefined {
+export function renderRedatamFilterExpression(
+  query: CensusQuery,
+): string | undefined {
   const parts = query.filters.map(redatamPredicate);
   if (query.geography_selection.type === "include") {
     const variable = geographyVariable(query.geography_selection.level);
@@ -68,7 +70,7 @@ export function compileRedatam(
   catalog: CensusCatalog,
 ): RedatamArtifact {
   const query = assertCompilableQuery(input, catalog);
-  const universe = universeExpression(query);
+  const universe = renderRedatamFilterExpression(query);
   const breakdown = breakdownVariable(query);
   const lines = ["RUNDEF ACQ"];
 
@@ -105,7 +107,7 @@ export function compileRedatam(
       "",
       `DEFINE ${marker}`,
       "  AS SWITCH",
-      `  INCASE (${redatamPredicate(query.measure.condition)})`,
+      `  INCASE (${renderRedatamPredicate(query.measure.condition)})`,
       "  ASSIGN 1",
       "  ELSE 0",
       "  TYPE INTEGER",
