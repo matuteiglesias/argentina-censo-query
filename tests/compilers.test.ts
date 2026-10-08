@@ -93,19 +93,19 @@ describe("B4-B6 deterministic compilers", () => {
     );
   });
 
-  it("compiles Redatam SHARE as a deterministic 0/1 indicator average", () => {
+  it("compiles Redatam SHARE as selected and total COUNT tables", () => {
     const code = compileRedatam(
       golden("porcentaje de hogares alquila").expected,
       CPV2022_VP_CATALOG_V0,
     ).code;
 
-    expect(code).toContain("DEFINE HOGAR.ZZACQSHARE");
-    expect(code).toContain("AS SWITCH");
-    expect(code).toContain("INCASE (HOGAR.H22 = 2)\n  ASSIGN 1");
-    expect(code).toContain("ELSE 0");
-    expect(code).not.toContain("RANGE 0-1");
-    expect(code).toContain("AS AVERAGE");
-    expect(code).toContain("OF HOGAR.ZZACQSHARE BY DPTO.IDPTO");
+    expect(code).toContain("DEFINE HOGAR.ZZACQCOUNT");
+    expect(code).toContain("TABLE ACQ_TOTAL");
+    expect(code).toContain("TABLE ACQ_SELECTED");
+    expect(code).toContain("OF HOGAR.ZZACQCOUNT BY DPTO.IDPTO");
+    expect(code).toContain("FILTER (HOGAR.H22 = 2)");
+    expect(code).not.toContain("ZZACQSHARE");
+    expect(code).not.toContain("AS SWITCH");
   });
 
   it("maps standard INDEC WebServer surfaces for the golden subset", () => {

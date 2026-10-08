@@ -2,104 +2,146 @@
 
 B5 deterministically projects a validated `CensusQuery` to Redatam Process source.
 
-It writes code. It does not execute Redatam.
+It writes code. It does not remotely execute Redatam.
 
 ## Design rule
 
-The Redatam program is never model-generated. It comes from the same canonical query consumed by the SQL compiler.
+The Redatam program is never model-generated. It comes from the same canonical CensusQuery consumed by the SQL compiler.
 
 A query that fails B3 cannot reach B5.
 
-## v1 patterns
+## Runtime-qualified syntax boundary
 
-### Base universe
+The permanent-radio qualification used:
 
-Base filters become the `RUNDEF` universe. The program starts from the whole selected database:
+- RedEngine 1.1.0-final;
+- redatamx 1.1.3;
+- April-2025 VP;
+- RADIO 061471101.
+
+That runtime rejected several initially assumed forms. The supported compiler therefore:
+
+- does **not** emit `SELECTION ALL`;
+- does **not** emit query predicates as a RUNDEF `UNIVERSE`;
+- applies query predicates as table-level `FILTER`;
+- does not add unnecessary marker `RANGE` declarations.
+
+The local qualification harness adds the RADIO selection externally so execution scope and CensusQuery meaning remain separate.
+
+## COUNT
+
+B5 defines one compiler-private marker on the entity being counted:
 
 ~~~text
 RUNDEF ACQ
-  SELECTION ALL
-  UNIVERSE (...)
-~~~
 
-When there are no filters the UNIVERSE clause is omitted.
-
-### COUNT
-
-B5 defines a compiler-private one-valued marker on the entity being counted:
-
-~~~text
 DEFINE PERSONA.ZZACQCOUNT
   AS 1
   TYPE INTEGER
-  RANGE 1-1
+
+TABLE ACQ_RESULT
+  AS FREQUENCY
+  OF PERSONA.ZZACQCOUNT
+  FILTER (PERSONA.EDAD >= 65)
 ~~~
 
-Without a breakdown it emits a frequency of that marker. With a breakdown it emits a crosstab against the requested variable/geography.
-
-This keeps the counted entity explicit even when the filter references an ancestor entity.
-
-### AVERAGE
+With a breakdown it uses the same marker in a crosstab:
 
 ~~~text
 TABLE ACQ_RESULT
-  AS AVERAGE
-  OF PERSONA.EDAD BY PROV.IDPROV
+  AS CROSSTABS
+  OF PERSONA.ZZACQCOUNT BY PROV.IDPROV
 ~~~
 
-### SHARE
+This keeps the counted entity explicit even when filters reference an ancestor entity.
 
-SHARE is represented by a deterministic 0/1 variable and the mean of that variable:
+## AVERAGE
 
 ~~~text
-DEFINE HOGAR.ZZACQSHARE
-  AS SWITCH
-  INCASE (HOGAR.H22 = 2)
-  ASSIGN 1
-  ELSE 0
+RUNDEF ACQ
+
+TABLE ACQ_RESULT
+  AS AVERAGE
+  OF PERSONA.EDAD
+~~~
+
+Base query filters, when present, are appended as a table-level `FILTER`.
+
+## SHARE
+
+The original implementation attempted a generated 0/1 `SWITCH` variable. RedEngine 1.1 rejected the tested `INCASE` forms.
+
+That path is retired.
+
+B7 defines SHARE by two COUNT tables:
+
+~~~text
+RUNDEF ACQ
+
+DEFINE HOGAR.ZZACQCOUNT
+  AS 1
   TYPE INTEGER
 
-TABLE ACQ_RESULT
-  AS AVERAGE
-  OF HOGAR.ZZACQSHARE BY DPTO.IDPTO
+TABLE ACQ_TOTAL
+  AS CROSSTABS
+  OF HOGAR.ZZACQCOUNT BY DPTO.IDPTO
+
+TABLE ACQ_SELECTED
+  AS CROSSTABS
+  OF HOGAR.ZZACQCOUNT BY DPTO.IDPTO
+  FILTER (HOGAR.H22 = 2)
 ~~~
 
-The base filters remain in the RUNDEF universe; the share condition affects only the numerator indicator.
+If the CensusQuery has base filters, `ACQ_TOTAL` receives the base filter and `ACQ_SELECTED` receives:
+
+~~~text
+(base filter) AND (share condition)
+~~~
+
+B7 canonicalization computes:
+
+~~~text
+share = selected / total
+~~~
+
+by breakdown.
+
+The component COUNT/FILTER/CROSSTABS primitives have permanent-radio evidence. The composed two-table SHARE artifact remains labelled `derived_from_radio_qualified` until its opt-in live gate is rerun.
 
 ## Geography
 
-The current compiler uses the official Redatam geography variables:
+The compiler uses the Redatam geography variables:
 
 ~~~text
 PROV.IDPROV
 DPTO.IDPTO
 ~~~
 
-This is separate from B4's local `XRADIO` prefix projection. Both are projections of the same CensusQuery geography level.
+This is separate from B4's local XRADIO-prefix projection. Both are deterministic projections of the same CensusQuery geography level.
 
-## Cloud gate
+## Preserved empirical evidence
 
-Every current golden CensusQuery produces deterministic Redatam source, and unit tests pin the important COUNT/AVERAGE/SHARE forms.
+The B5 qualification report records real-source agreement for:
 
-That is a **compiler gate**, not a live RedEngine equivalence gate.
+- base COUNT VIVIENDA/HOGAR/PERSONA;
+- PERSONA EDAD filter;
+- PERSONA P02 filter;
+- PERSONA filtered through ancestor HOGAR.H22;
+- AVERAGE PERSONA.EDAD;
+- PERSONA count by PROV;
+- HOGAR count by DPTO.
 
-## RedEngine 1.1 compatibility note
+See `docs/qualification/B5_REDATAM_EQUIVALENCE.md`.
 
-The first live qualification found that RedEngine 1.1.0-final rejected a same-line `INCASE (...) ASSIGN 1` form for SHARE. The compiler now emits the test and assignment as separate statements, matching documented SWITCH examples used by older Redatam runtimes.
+Queries that combine these primitives in a shape not directly executed are **derived from qualified primitives**, not silently promoted to exact empirical qualification.
 
-A dedicated opt-in gate in `tests/b5-share-live.test.ts` compares the resulting RedEngine SHARE value directly with B4 on RADIO 061471101.
+## Gates
 
-## Local qualification still required
+Cloud CI verifies deterministic compilation for the complete B8 supported corpus.
 
-Before calling B5 empirically qualified, run representative compiled programs against the same permanent RXDB RADIO used by B4 and compare Redatam output with B4's local result.
+The authorized local environment owns the optional execution gates in:
 
-At minimum qualify:
+- `tests/b5-live-qualification.test.ts`;
+- `tests/b5-share-live.test.ts`.
 
-- total VIVIENDA/HOGAR/PERSONA counts;
-- PERSONA age/sex filter;
-- an ancestor HOGAR filter at PERSONA grain;
-- average age;
-- a share;
-- PROV/DPTO breakdown behavior.
-
-A syntax-valid-looking program is not evidence of result equivalence.
+A syntax-valid-looking program alone is never evidence of statistical equivalence.

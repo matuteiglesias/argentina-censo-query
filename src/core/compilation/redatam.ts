@@ -62,7 +62,32 @@ export function renderRedatamFilterExpression(
         ")",
     );
   }
-  return parts.length > 0 ? parts.map((part) => `(${part})`).join(" AND ") : undefined;
+  return parts.length > 0
+    ? parts.map((part) => `(${part})`).join(" AND ")
+    : undefined;
+}
+
+function appendCountTable(
+  lines: string[],
+  tableName: string,
+  marker: string,
+  breakdown: string | undefined,
+  filter: string | undefined,
+): void {
+  lines.push("", `TABLE ${tableName}`);
+  if (breakdown) {
+    lines.push("  AS CROSSTABS", `  OF ${marker} BY ${breakdown}`);
+  } else {
+    lines.push("  AS FREQUENCY", `  OF ${marker}`);
+  }
+  if (filter) lines.push("  FILTER " + filter);
+}
+
+function combineFilters(
+  left: string | undefined,
+  right: string,
+): string {
+  return left ? `(${left}) AND (${right})` : `(${right})`;
 }
 
 export function compileRedatam(
@@ -70,29 +95,21 @@ export function compileRedatam(
   catalog: CensusCatalog,
 ): RedatamArtifact {
   const query = assertCompilableQuery(input, catalog);
-  const universe = renderRedatamFilterExpression(query);
+  const baseFilter = renderRedatamFilterExpression(query);
   const breakdown = breakdownVariable(query);
   const lines = ["RUNDEF ACQ"];
 
   if (query.measure.type === "count") {
     const marker = `${query.measure.entity}.ZZACQCOUNT`;
     assertPrivateMarkerAvailable(catalog, marker);
-    lines.push(
-      "",
-      `DEFINE ${marker}`,
-      "  AS 1",
-      "  TYPE INTEGER",
-      "",
-      "TABLE ACQ_RESULT",
+    lines.push("", `DEFINE ${marker}`, "  AS 1", "  TYPE INTEGER");
+    appendCountTable(
+      lines,
+      "ACQ_RESULT",
+      marker,
+      breakdown,
+      baseFilter,
     );
-    if (breakdown) {
-      lines.push(
-        "  AS CROSSTABS",
-        `  OF ${marker} BY ${breakdown}`,
-      );
-    } else {
-      lines.push("  AS FREQUENCY", `  OF ${marker}`);
-    }
   } else if (query.measure.type === "average") {
     lines.push("", "TABLE ACQ_RESULT", "  AS AVERAGE");
     lines.push(
@@ -100,27 +117,32 @@ export function compileRedatam(
         ? `  OF ${query.measure.variable} BY ${breakdown}`
         : `  OF ${query.measure.variable}`,
     );
+    if (baseFilter) lines.push("  FILTER " + baseFilter);
   } else {
-    const marker = `${query.measure.entity}.ZZACQSHARE`;
+    const marker = `${query.measure.entity}.ZZACQCOUNT`;
     assertPrivateMarkerAvailable(catalog, marker);
-    lines.push(
-      "",
-      `DEFINE ${marker}`,
-      "  AS SWITCH",
-      `  INCASE (${renderRedatamPredicate(query.measure.condition)})`,
-      "  ASSIGN 1",
-      "  ELSE 0",
-      "  TYPE INTEGER",
-      "",
-      "TABLE ACQ_RESULT",
-      "  AS AVERAGE",
-      breakdown
-        ? `  OF ${marker} BY ${breakdown}`
-        : `  OF ${marker}`,
+    lines.push("", `DEFINE ${marker}`, "  AS 1", "  TYPE INTEGER");
+
+    appendCountTable(
+      lines,
+      "ACQ_TOTAL",
+      marker,
+      breakdown,
+      baseFilter,
+    );
+
+    const selectedFilter = combineFilters(
+      baseFilter,
+      renderRedatamPredicate(query.measure.condition),
+    );
+    appendCountTable(
+      lines,
+      "ACQ_SELECTED",
+      marker,
+      breakdown,
+      selectedFilter,
     );
   }
-
-  if (universe) lines.push("  FILTER " + universe);
 
   return {
     target: "redatam_process",
