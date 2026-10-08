@@ -100,8 +100,9 @@ describe("B4-B6 deterministic compilers", () => {
 
     expect(code).toContain("DEFINE HOGAR.ZZACQSHARE");
     expect(code).toContain("AS SWITCH");
-    expect(code).toContain("INCASE (HOGAR.H22 = 2) ASSIGN 1");
-    expect(code).toContain("ELSE 0");
+    expect(code).toContain("INCASE (HOGAR.H22 = 2)\n  ASSIGN 1");
+    expect(code).toContain("OPTIONS DEFAULT 0");
+    expect(code).not.toContain("ELSE 0");
     expect(code).toContain("AS AVERAGE");
     expect(code).toContain("OF HOGAR.ZZACQSHARE BY DPTO.IDPTO");
   });
@@ -119,12 +120,16 @@ describe("B4-B6 deterministic compilers", () => {
       CPV2022_VP_CATALOG_V0,
     );
     expect(variableBreakdown.steps.join("\n")).toContain("FREQPOBPART");
+    expect(variableBreakdown.steps.join("\n")).toContain(
+      'En "Corte de área", elegí: País.',
+    );
 
     const averageRecipe = compileIndecWebRecipe(
       golden("edad promedio").expected,
       CPV2022_VP_CATALOG_V0,
     );
-    expect(averageRecipe.steps.join("\n")).toContain("PROMEDIOSPART");
+    expect(averageRecipe.steps.join("\n")).toContain("PROGVIVPART");
+    expect(averageRecipe.steps.join("\n")).not.toContain("PROMEDIOSPART");
 
     const shareRecipe = compileIndecWebRecipe(
       golden("porcentaje de hogares alquila").expected,
