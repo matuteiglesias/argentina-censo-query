@@ -42,13 +42,15 @@ Every referenced variable must:
 - accept the supplied value type;
 - satisfy its curated range/category rules.
 
-Blocked variables such as PERSONA.HNVUA fail closed.
+Blocked variables such as PERSONA.HNVUA fail closed. Experimental variables such as PERSONA.AESC also fail closed until their unresolved semantic boundary is explicitly modeled.
 
 ### Categories
 
 For categorical variables, the code must be explicitly present in the curated category catalog.
 
 A numerically plausible but unknown code is rejected.
+
+For ordered numeric ranges, `between [lower, upper]` also requires `lower <= upper`; a syntactically plausible reversed range is rejected.
 
 ### Average
 
