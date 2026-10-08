@@ -10,7 +10,7 @@ import { GoldenInterpreter } from "../src/server/interpreter/golden.js";
 import { InterpreterError, type SemanticInterpreter } from "../src/server/interpreter/types.js";
 import { submitQuestion } from "../src/server/query-orchestrator.js";
 
-const previewEnv = { NODE_ENV: "production", CENSO_EXECUTION_MODE: "local_radio", CENSO_LOCAL_SLICE_ROOT: "/tmp/fixture" };
+const previewEnv = { NODE_ENV: "production", CENSO_EXECUTION_MODE: "local_radio", CENSO_LOCAL_SLICE_ROOT: "/tmp/fixture" } as const;
 
 describe("C4 deterministic product orchestration", () => {
   it("carries all 20 golden questions through one canonical compilation path", async () => {
