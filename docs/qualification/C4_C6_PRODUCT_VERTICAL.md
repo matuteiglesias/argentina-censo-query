@@ -21,7 +21,10 @@ Cloud implementation:
 - `npm run eval:c3`: GoldenInterpreter PASS, 20/20 exact, 4/4 negative, 0 unsafe acceptance.
 - Local `POST /api/query`: golden returned `ready` with one CensusQuery, query ID, bundle, qualifications and provenance; ambiguous returned `needs_clarification` without query/bundle; unsupported and unknown returned `unsupported` without query/bundle.
 - Production `npm run build && npm run start` with local execution variables set: `POST /api/run` returned HTTP 404 `local_execution_disabled`.
-- Chrome headless UI smoke: golden displayed interpretation, reproducibility sections and public no-execution state; ambiguous question displayed clarification and no execution. The copy controls are rendered from the same three server artifacts.
+- Chrome headless UI smoke in local mode: golden displayed interpretation, enabled `Ejecutar en RADIO local`, and the three copy controls (`Copiar` SQL, `Copiar` Redatam, `Copiar instrucciones` INDEC). SHARE displayed `1,79%` and the result panel stated `RADIO 061471101` and that it is not national.
+- With `CENSO_EXECUTION_MODE=local_radio` and `CENSO_LOCAL_SLICE_ROOT=/media/matias/Elements1/CENSO_work/rxdb/vp-radio-061471101`, real local execution passed. `validation.json` was `pass`; the manifest selected RADIO `061471101`, had `identity_scope=RADIO`, `scope_field=XRADIO`, and semantic hash `84ba4720a91208bd638fb6623c510b04acb3bf910c85f6f60b9234d525caa2f6`.
+- Real COUNT: `¿Cuántas mujeres de 20 a 29 años hay por provincia?` returned `8` for province `06`.
+- Real SHARE: `¿Qué porcentaje de hogares alquila por departamento?` returned `0.017857142857142856` for department `06147`, exactly `1/56` selected/total households.
 
 ## Verified GitHub Actions
 
@@ -31,16 +34,15 @@ Cloud implementation:
 - Supported C4 tests cover the exact 20 B8 queries and four negative outcomes. C5 tests cover explicit opt-in, production denial, loopback checks, mock CanonicalResult, synthetic RADIO executor identity disagreement, Parquet tampering and missing custody.
 - C7 HTTP tests cover supported, ambiguous, unsupported and invalid envelope handling, plus disabled run route.
 
-These are cloud/contract and local compile-only checks, not real VP data source qualification and not model-live evaluation.
+These include real local VP RADIO execution for the two representative aggregates above; they are not national-output validation and not model-live evaluation.
 
 ## Known limitations
 
 1. Live C3 Gemini evaluation: NOT RUN; no Google credentials in cloud.
-2. Real local RADIO `061471101` execution via new UI/API: NOT RUN. No authorized verified slice or `validation.json` was present under `/home/matias`; therefore COUNT/SHARE numeric values, manifest hash and `RADIO 061471101` provenance were not claimed.
-3. Browser smoke was run with Chrome headless, not Playwright: compile-only golden and clarification flows passed; local result and copy-to-clipboard effects were not exercised against a real slice.
-4. Public preview deployment: NOT DONE. No Vercel project matching argentina-censo-query was found in the available project search. Do not automatically create an external deployment.
-5. The npm 11 lockfile issue was corrected in the reviewed package-lock diff described above; CI/workflow policy was otherwise unchanged.
-6. PR #7 is still the parent; PR #8 must not merge first.
+2. Browser smoke was run with Chrome headless, not Playwright. UI rendering, local execution, provenance and copy control presence passed; clipboard permission/write confirmation itself was not asserted.
+3. Public preview deployment: NOT DONE. No Vercel project matching argentina-censo-query was found in the available project search. Do not automatically create an external deployment.
+4. The npm 11 lockfile issue was corrected in the reviewed package-lock diff described above; CI/workflow policy was otherwise unchanged.
+5. PR #7 is still the parent; PR #8 must not merge first.
 
 ## Scientific claim constraints
 
