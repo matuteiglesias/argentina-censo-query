@@ -230,19 +230,21 @@ export const GOLDEN_QUESTIONS: Array<{
     ),
   },
   {
-    question: "¿Cuántas personas tienen 12 o más años completos de escolaridad por provincia?",
+    question: "¿Cuántas personas de 65 años o más hay por sexo registrado al nacer?",
     intent: intent(
       "person",
       { type: "count" },
-      [pred("completed-school-years", "gte", literal(12))],
-      geo("province"),
+      [pred("age", "gte", literal(65))],
+      { type: "variable", concept: "sex-at-birth" },
     ),
-    expected: query(
-      "PERSONA",
-      { type: "count", entity: "PERSONA" },
-      [{ variable: "PERSONA.AESC", operator: "gte", value: 12 }],
-      "PROV",
-    ),
+    expected: {
+      ...query(
+        "PERSONA",
+        { type: "count", entity: "PERSONA" },
+        [{ variable: "PERSONA.EDAD", operator: "gte", value: 65 }],
+      ),
+      breakdowns: [{ type: "variable", variable: "PERSONA.P02" }],
+    },
   },
   {
     question: "¿Cuántos hogares alquilan su vivienda por provincia?",
