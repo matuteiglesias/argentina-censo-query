@@ -103,7 +103,7 @@ describe("B4-B6 deterministic compilers", () => {
     expect(code).toContain("INCASE (HOGAR.H22 = 2) ASSIGN 1");
     expect(code).toContain("ELSE 0");
     expect(code).toContain("AS AVERAGE");
-    expect(code).toContain("OF HOGAR.ZZACQSHARE BY DPTO.IDDPTO");
+    expect(code).toContain("OF HOGAR.ZZACQSHARE BY DPTO.IDPTO");
   });
 
   it("maps standard INDEC WebServer surfaces for the golden subset", () => {
