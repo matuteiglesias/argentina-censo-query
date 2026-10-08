@@ -218,13 +218,18 @@ export const CPV2022_VP_CATALOG_V0 = assertCatalog({
       range: { min: 0, max: 99 },
       concepts: ["completed-school-years"],
       aliases: ["años de escolaridad", "anos de escolaridad"],
-      allowed_operators: ["eq", "neq", "gt", "gte", "lt", "lte", "between", "in"],
-      supports_average: true,
+      allowed_operators: [],
+      supports_average: false,
       supports_breakdown: false,
-      status: "supported",
+      status: "experimental",
       category_coverage: "none",
-      anomaly: null,
-      evidence_ids: ["official-person-dictionary", "project-relational-schema"],
+      anomaly:
+        "Code 99 means Ignorado; ordered comparisons/averages stay disabled until special-value semantics are modeled.",
+      evidence_ids: [
+        "official-person-dictionary",
+        "official-definitions",
+        "project-relational-schema",
+      ],
     },
     {
       id: "PERSONA.HNVUA",
