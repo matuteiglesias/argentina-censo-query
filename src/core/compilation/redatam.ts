@@ -70,8 +70,7 @@ export function compileRedatam(
   const query = assertCompilableQuery(input, catalog);
   const universe = universeExpression(query);
   const breakdown = breakdownVariable(query);
-  const lines = ["RUNDEF ACQ", "  SELECTION ALL"];
-  if (universe) lines.push("  UNIVERSE " + universe);
+  const lines = ["RUNDEF ACQ"];
 
   if (query.measure.type === "count") {
     const marker = `${query.measure.entity}.ZZACQCOUNT`;
@@ -81,7 +80,6 @@ export function compileRedatam(
       `DEFINE ${marker}`,
       "  AS 1",
       "  TYPE INTEGER",
-      "  RANGE 1-1",
       "",
       "TABLE ACQ_RESULT",
     );
@@ -110,7 +108,6 @@ export function compileRedatam(
       `  INCASE (${redatamPredicate(query.measure.condition)}) ASSIGN 1`,
       "  ELSE 0",
       "  TYPE INTEGER",
-      "  RANGE 0-1",
       "",
       "TABLE ACQ_RESULT",
       "  AS AVERAGE",
@@ -119,6 +116,8 @@ export function compileRedatam(
         : `  OF ${marker}`,
     );
   }
+
+  if (universe) lines.push("  FILTER " + universe);
 
   return {
     target: "redatam_process",

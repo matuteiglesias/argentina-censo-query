@@ -82,8 +82,9 @@ describe("B4-B6 deterministic compilers", () => {
     ).code;
 
     expect(code).toContain("RUNDEF ACQ");
-    expect(code).toContain("SELECTION ALL");
-    expect(code).toContain("UNIVERSE");
+    expect(code).not.toContain("SELECTION ALL");
+    expect(code).toContain("FILTER (PERSONA.P02 = 1) AND ((PERSONA.EDAD >= 20 AND PERSONA.EDAD <= 29))");
+    expect(code).not.toContain("RANGE 1-1");
     expect(code).toContain("PERSONA.P02 = 1");
     expect(code).toContain("DEFINE PERSONA.ZZACQCOUNT");
     expect(code).toContain("AS CROSSTABS");
@@ -102,6 +103,7 @@ describe("B4-B6 deterministic compilers", () => {
     expect(code).toContain("AS SWITCH");
     expect(code).toContain("INCASE (HOGAR.H22 = 2) ASSIGN 1");
     expect(code).toContain("ELSE 0");
+    expect(code).not.toContain("RANGE 0-1");
     expect(code).toContain("AS AVERAGE");
     expect(code).toContain("OF HOGAR.ZZACQSHARE BY DPTO.IDPTO");
   });
