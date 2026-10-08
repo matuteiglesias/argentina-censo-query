@@ -119,6 +119,7 @@ describe("B4 local DuckDB executor", () => {
     const verified = await verifyLocalVpSlice(root);
     expect(verified.root).toBe(root);
     expect(verified.manifest_semantic_hash).toHaveLength(64);
+    expect(verified.radio_code).toBe("061471101");
   });
 
   it("executes the compiled SQL for a person count on synthetic radio Parquet", async () => {
@@ -162,6 +163,22 @@ describe("B4 local DuckDB executor", () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]?.breakdown).toBe("06147");
     expect(Number(result.rows[0]?.value)).toBeCloseTo(0.5);
+  });
+
+  it("rejects a manifest RADIO label that disagrees with actual Parquet XRADIO", async () => {
+    const root = await makeSlice();
+    const manifestPath = join(root, "dataset-manifest.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as Record<string, unknown>;
+    manifest.selection = { entity: "RADIO", code: "061471102" };
+    delete manifest.semantic_hash;
+    manifest.semantic_hash = sha256Canonical(manifest);
+    await writeFile(manifestPath, JSON.stringify(manifest), "utf8");
+
+    await expect(executeLocalVpQuery(
+      golden("mujeres de 20 a 29").expected,
+      root,
+      CPV2022_VP_CATALOG_V0,
+    )).rejects.toThrow("invalid_XRADIO:VIVIENDA");
   });
 
   it("fails closed before DuckDB execution when a Parquet hash changes", async () => {
