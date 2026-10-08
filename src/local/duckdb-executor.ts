@@ -24,6 +24,7 @@ function sqlLiteral(value: string): string {
 async function createLogicalSchema(
   connection: Awaited<ReturnType<DuckDBInstance["connect"]>>,
   paths: { vivienda: string; hogar: string; persona: string },
+  expectedRadio: string,
 ): Promise<void> {
   await connection.run("CREATE SCHEMA censo");
 
@@ -40,7 +41,55 @@ async function createLogicalSchema(
       `SELECT COUNT(*) AS bad
        FROM censo.${name}
        WHERE "XRADIO" IS NULL
-          OR NOT regexp_matches(CAST("XRADIO" AS VARCHAR), '^[0-9]{9}$')`,
+          OR NOT regexp_matches(CAST("XRADIO" AS VARCHAR), '^[0-9]{9}
+    );
+    const rows = check.getRowObjectsJson() as Array<Record<string, unknown>>;
+    if (Number(rows[0]?.bad ?? 0) !== 0) {
+      throw new LocalSliceError(`invalid_XRADIO:${name}`);
+    }
+  }
+}
+
+export async function executeLocalVpQuery(
+  queryInput: unknown,
+  sliceRoot: string,
+  catalog: CensusCatalog,
+): Promise<LocalExecutionResult> {
+  const verified = await verifyLocalVpSlice(sliceRoot);
+  const query = assertCompilableQuery(queryInput, catalog);
+  const sql = compileSql(query, catalog);
+  const instance = await DuckDBInstance.create(":memory:", {
+    threads: "1",
+  });
+  const connection = await instance.connect();
+
+  try {
+    await createLogicalSchema(connection, verified.paths, verified.radio_code);
+    const reader = await connection.runAndReadAll(sql.code);
+    const rows = reader.getRowObjectsJson() as LocalQueryRow[];
+    if (rows.length > 10000) {
+      throw new Error("local_result_row_limit_exceeded");
+    }
+
+    const queryId = stableCanonicalId("cq", query);
+    return {
+      contract: "argentina.census-local-execution/v1",
+      execution_id: stableCanonicalId("exec", {
+        query_id: queryId,
+        source_manifest_semantic_hash: verified.manifest_semantic_hash,
+      }),
+      query_id: queryId,
+      source_manifest_semantic_hash: verified.manifest_semantic_hash,
+      source_radio_code: verified.radio_code,
+      sql: sql.code,
+      rows,
+    };
+  } finally {
+    connection.closeSync();
+  }
+}
+)
+          OR CAST("XRADIO" AS VARCHAR) <> ${sqlLiteral(expectedRadio)}`,
     );
     const rows = check.getRowObjectsJson() as Array<Record<string, unknown>>;
     if (Number(rows[0]?.bad ?? 0) !== 0) {
