@@ -29,6 +29,40 @@ describe("CensusCatalog v0", () => {
     expect(variable?.anomaly).toMatch(/ambiguity/i);
   });
 
+  it("keeps AESC visible but non-queryable until Ignorado semantics are modeled", () => {
+    const variable = CPV2022_VP_CATALOG_V0.variables.find(
+      (item) => item.id === "PERSONA.AESC",
+    );
+    expect(variable?.status).toBe("experimental");
+    expect(variable?.allowed_operators).toEqual([]);
+    expect(variable?.supports_average).toBe(false);
+    expect(variable?.anomaly).toMatch(/99.*Ignorado/i);
+  });
+
+  it("rejects ambiguous category aliases inside one variable", () => {
+    const broken = structuredClone(CPV2022_VP_CATALOG_V0);
+    const man = broken.categories.find(
+      (item) => item.variable === "PERSONA.P02" && item.code === 2,
+    );
+    man!.aliases.push("mujer");
+    expect(checkCatalog(broken).issues.map((item) => item.code)).toContain(
+      "ambiguous_category_term",
+    );
+  });
+
+  it("rejects multiple parents for one entity", () => {
+    const broken = structuredClone(CPV2022_VP_CATALOG_V0);
+    broken.relationships.push({
+      child: "PERSONA",
+      parent: "VIVIENDA",
+      kind: "belongs_to",
+      evidence_ids: ["adapter-vp-contract"],
+    });
+    expect(checkCatalog(broken).issues.map((item) => item.code)).toContain(
+      "multiple_entity_parents",
+    );
+  });
+
   it("rejects ambiguous variable aliases", () => {
     const broken = structuredClone(CPV2022_VP_CATALOG_V0);
     broken.variables[1]!.aliases.push("edad");
