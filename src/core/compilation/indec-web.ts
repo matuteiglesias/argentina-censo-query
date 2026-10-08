@@ -178,7 +178,9 @@ export function compileIndecWebRecipe(
     (query.universe.entity === "PERSONA" || query.universe.entity === "HOGAR") &&
     (!breakdown || breakdown.type === "geography")
   ) {
-    const condition = redatam.code.match(/INCASE \((.+)\) ASSIGN 1/)?.[1];
+    const condition = redatam.code.match(
+      /INCASE \((.+)\)\s*\n\s*ASSIGN 1/,
+    )?.[1];
     if (!condition) return programFallback(query, redatam.code, universe);
     return {
       target: "indec_web_recipe",
