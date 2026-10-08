@@ -45,3 +45,18 @@ export function canonicalJson(value: unknown): string {
 export function sha256Canonical(value: unknown): string {
   return createHash("sha256").update(canonicalJson(value)).digest("hex");
 }
+
+
+export function stableCanonicalId(
+  prefix: string,
+  value: unknown,
+  hashLength = 20,
+): string {
+  if (!/^[a-z][a-z0-9-]*$/.test(prefix)) {
+    throw new TypeError("stable ID prefix must be a canonical lowercase slug");
+  }
+  if (!Number.isInteger(hashLength) || hashLength < 12 || hashLength > 64) {
+    throw new RangeError("stable ID hash length must be an integer from 12 to 64");
+  }
+  return prefix + "-" + sha256Canonical(value).slice(0, hashLength);
+}

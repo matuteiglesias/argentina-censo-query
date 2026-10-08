@@ -1,0 +1,9 @@
+{
+  "contract": "argentina.census-semantic-intent/v1",
+  "original_question": "x",
+  "measure": {
+    "type": "count",
+    "entity_concept": "persona.p02"
+  },
+  "universe_concept": "vp"
+}

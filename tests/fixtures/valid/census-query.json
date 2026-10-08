@@ -1,0 +1,11 @@
+{
+  "contract": "argentina.census-query/v1",
+  "universe": { "database": "VP", "entity": "PERSONA" },
+  "measure": { "type": "count", "entity": "PERSONA" },
+  "filters": [
+    { "variable": "PERSONA.P02", "operator": "eq", "value": 1 },
+    { "variable": "PERSONA.EDAD", "operator": "between", "value": [20, 29] }
+  ],
+  "breakdowns": [{ "type": "geography", "level": "PROV" }],
+  "geography_selection": { "type": "all" }
+}

@@ -1,6 +1,6 @@
-# B0 — Typed contract spine
+# B1 — Typed contract spine
 
-B0 implements the versioned structural contracts used by later phases.
+B1 closes the versioned structural contracts used by later phases and adds explicit stability gates.
 
 ## Contracts
 
@@ -10,9 +10,11 @@ Concept-level representation intended for a future structured-output model.
 
 It contains semantic concept IDs, literal values and operators, but no raw Census variable identifiers or category codes.
 
-### InterpretationResult
+### Clarification and InterpretationResult
 
-A discriminated union:
+Clarification is a public contract with a bounded reason code, a user-facing prompt and 2–5 explicit options.
+
+InterpretationResult is a discriminated union:
 
 - candidate;
 - needs_clarification;
@@ -28,19 +30,29 @@ It contains Census identifiers and is the sole authority from which targets and 
 
 ### CensusCatalog
 
-Typed shape for B1 catalog contents:
+Typed semantic/evidence contract containing:
 
-- entities;
-- variables;
+- source/release basis;
+- evidence references;
+- universe;
+- entities and validated relationships;
+- variables and support state;
 - categories;
-- geographies;
-- support/anomaly state.
-
-B0 defines the shape; B1 supplies scientifically reviewed contents.
+- geographies.
 
 ### CompilationContext
 
-Names the catalog and source/release assumptions used for compilation. It is intentionally not an "execution context" because v1 executes nothing.
+Names the catalog and source/release assumptions used for compilation. It is intentionally not an execution context because v1 executes nothing.
+
+### CompilationTarget
+
+An explicit discriminated union of exactly three copy targets:
+
+- SQL;
+- Redatam Process;
+- INDEC Web recipe.
+
+It contains no execution/result variant.
 
 ### CompilationBundle
 
@@ -53,18 +65,28 @@ Contains:
 - Redatam Process artifact;
 - INDEC Web recipe.
 
-The bundle deliberately does **not** store an independent free-text interpretation summary. A later UI description must be rendered deterministically from CensusQuery so a second semantic channel cannot drift away from the canonical AST.
+The bundle deliberately does not store an independent free-text interpretation summary. A later UI description must be rendered deterministically from CensusQuery.
 
-No timestamp is required in the core bundle so canonical serialization can remain deterministic.
+### QueryValidationResult
+
+A fail-closed semantic validation result. Future compilers must consume only queries for which this contract reports valid=true.
+
+## Stability gates
+
+B1 adds three mechanical gates:
+
+1. persisted valid fixtures must parse;
+2. persisted invalid fixtures must fail closed;
+3. JSON-schema digests for all public contracts must remain stable unless deliberately updated with the contract change.
 
 ## Determinism
 
 canonicalJson() recursively sorts object keys while preserving array order.
 
-sha256Canonical() gives later phases a stable primitive for query/bundle IDs and regression fixtures.
+sha256Canonical() supplies stable query, bundle and schema-digest primitives.
 
-## Deliberately not implemented in B0
+stableCanonicalId(prefix, value) derives a deterministic prefixed ID from canonical content. IDs therefore remain stable across object-key order and do not depend on timestamps or process state.
 
-B0 does not decide whether a concept resolves to a specific Census variable, whether a relationship path is valid, or whether three compiled targets are semantically equivalent.
+## Deliberately outside B1
 
-Those are B1/B2/compiler responsibilities.
+B1 does not let a model resolve Census concepts. B2 owns the curated catalog/resolver and B3 owns semantic validation.

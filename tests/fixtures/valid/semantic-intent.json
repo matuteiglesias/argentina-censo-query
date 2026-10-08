@@ -1,0 +1,22 @@
+{
+  "contract": "argentina.census-semantic-intent/v1",
+  "original_question": "¿Cuántas mujeres de 20 a 29 años hay por provincia?",
+  "universe_concept": "vp",
+  "measure": { "type": "count", "entity_concept": "person" },
+  "filters": [
+    {
+      "variable_concept": "sex-at-birth",
+      "operator": "eq",
+      "value": { "kind": "concept", "concept": "woman" }
+    },
+    {
+      "variable_concept": "age",
+      "operator": "between",
+      "value": [
+        { "kind": "literal", "value": 20 },
+        { "kind": "literal", "value": 29 }
+      ]
+    }
+  ],
+  "breakdown": { "type": "geography", "concept": "province" }
+}

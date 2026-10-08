@@ -3,10 +3,13 @@ import {
   CensusCatalogSchema,
   CensusQuerySchema,
   CompilationBundleSchema,
+  CompilationTargetSchema,
+  CPV2022_VP_CATALOG_V0,
   InterpretationResultSchema,
   SemanticIntentSchema,
   canonicalJson,
   sha256Canonical,
+  stableCanonicalId,
 } from "../src/core/index.js";
 
 describe("SemanticIntent", () => {
@@ -14,6 +17,7 @@ describe("SemanticIntent", () => {
     const parsed = SemanticIntentSchema.parse({
       contract: "argentina.census-semantic-intent/v1",
       original_question: "¿Cuántas mujeres de 20 a 29 años hay por provincia?",
+      universe_concept: "vp",
       measure: { type: "count", entity_concept: "person" },
       filters: [
         {
@@ -42,6 +46,7 @@ describe("SemanticIntent", () => {
         SemanticIntentSchema.parse({
           contract: "argentina.census-semantic-intent/v1",
           original_question: "x",
+          universe_concept: "vp",
           measure: { type: "count", entity_concept: rawConcept },
         }),
       ).toThrow();
@@ -106,37 +111,30 @@ describe("CensusQuery", () => {
 });
 
 describe("CensusCatalog", () => {
-  it("defines typed future B1 catalog contents including anomalies", () => {
-    const catalog = CensusCatalogSchema.parse({
-      contract: "argentina.census-catalog/v1",
-      catalog_id: "arg-cpv2022-vp-test",
-      census_vintage: 2022,
-      database: "VP",
-      source_release_label: "fixture",
-      entities: [
-        {
-          id: "PERSONA",
-          label: "Persona",
-          concepts: ["person"],
-        },
-      ],
-      variables: [
-        {
-          id: "PERSONA.HNVUA",
-          entity: "PERSONA",
-          label: "HNVUA",
-          value_type: "integer",
-          concepts: ["children-born-alive"],
-          allowed_operators: ["eq"],
-          status: "blocked",
-          anomaly: "known name/alias ambiguity in qualified runtimes",
-        },
-      ],
-      categories: [],
-      geographies: [],
-    });
+  it("parses the evidence-backed v0 catalog including visible anomalies", () => {
+    const catalog = CensusCatalogSchema.parse(CPV2022_VP_CATALOG_V0);
+    const hn = catalog.variables.find((item) => item.id === "PERSONA.HNVUA");
+    expect(hn?.status).toBe("blocked");
+    expect(hn?.anomaly).toMatch(/ambiguity/i);
+  });
+});
 
-    expect(catalog.variables[0]?.status).toBe("blocked");
+describe("CompilationTarget", () => {
+  it("is an explicit three-target discriminated contract", () => {
+    const sql = CompilationTargetSchema.parse({
+      target: "sql",
+      dialect: "duckdb-census-logical/v1",
+      logical_schema: "argentina.censo2022-relational/v1",
+      code: "SELECT 1;",
+    });
+    expect(sql.target).toBe("sql");
+
+    expect(() =>
+      CompilationTargetSchema.parse({
+        target: "execution_result",
+        rows: [],
+      }),
+    ).toThrow();
   });
 });
 
@@ -221,5 +219,17 @@ describe("canonical JSON", () => {
     expect(canonicalJson({ x: [2, 1] })).not.toBe(
       canonicalJson({ x: [1, 2] }),
     );
+  });
+
+  it("builds stable prefixed IDs from canonical content", () => {
+    const left = stableCanonicalId("cq", { b: 2, a: 1 });
+    const right = stableCanonicalId("cq", { a: 1, b: 2 });
+    expect(left).toBe(right);
+    expect(left).toMatch(/^cq-[0-9a-f]{20}$/);
+  });
+
+  it("rejects unsafe stable-ID prefixes and truncation", () => {
+    expect(() => stableCanonicalId("Census Query", {})).toThrow();
+    expect(() => stableCanonicalId("cq", {}, 8)).toThrow();
   });
 });

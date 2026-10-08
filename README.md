@@ -21,6 +21,8 @@ catalog resolution
      ↓
 CensusQuery             ← only authoritative statistical interpretation
      ↓
+semantic validation
+     ↓
 deterministic compilers
   ┌──────┼──────────────┐
   ↓      ↓              ↓
@@ -32,24 +34,27 @@ The model may propose semantic intent. It may not write or modify target-languag
 
 ## Current development status
 
-Implemented in the first contract slice:
+Implemented:
 
 - A0 product contract;
 - A1 claim boundaries;
 - A2 supported grammar;
-- B0 typed contract spine using TypeScript + Zod.
+- B1 typed contract spine + fixture/schema stability gates;
+- B2 evidence-backed CensusCatalog v0 + deterministic resolver;
+- B3 semantic query validator.
+
+Catalog v0 intentionally covers a small cross-target semantic core, not the full Census dictionary.
 
 Not implemented yet:
 
-- semantic catalog contents;
-- deterministic resolver/validator;
 - SQL compiler;
 - Redatam analytical compiler;
 - INDEC Web recipe compiler;
 - LLM interpreter;
-- Next.js UI.
+- Next.js UI;
+- any query execution.
 
-See docs/spec/PRODUCT.md.
+See docs/spec.
 
 ## Core development
 
