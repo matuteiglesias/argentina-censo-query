@@ -12,6 +12,7 @@ export type LocalExecutionResult = {
   execution_id: string;
   query_id: string;
   source_manifest_semantic_hash: string;
+  source_radio_code: string;
   sql: string;
   rows: LocalQueryRow[];
 };
@@ -78,6 +79,7 @@ export async function executeLocalVpQuery(
       }),
       query_id: queryId,
       source_manifest_semantic_hash: verified.manifest_semantic_hash,
+      source_radio_code: verified.radio_code,
       sql: sql.code,
       rows,
     };
