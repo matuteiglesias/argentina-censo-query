@@ -50,6 +50,11 @@ function promptFor(question: string, context: InterpreterContext): string {
   const prompt = [
     "Interpretá una sola pregunta del Censo 2022 VP según la gramática provista.",
     "Respondé únicamente un objeto JSON con la clave raíz interpretation.",
+    "Los únicos status válidos son candidate, needs_clarification y unsupported; nunca uses success.",
+    "Para candidate, el intent.contract debe ser exactamente argentina.census-semantic-intent/v1.",
+    "Para candidate, original_question debe copiar exactamente QUESTION.",
+    "Usá sólo valores de concepts canónicos del lexicón (no labels ni aliases) para universe_concept, entity_concept, variable_concept, categorías y breakdown.",
+    "Los únicos breakdown.type válidos son geography y variable.",
     "No inventes conceptos. Usá solamente concepts, aliases y opciones presentes en el lexicón.",
     "No devuelvas identificadores censales, códigos, SQL, Redatam, filtros ejecutables ni texto adicional.",
     "Si hay ambigüedad material, devolvé needs_clarification. Si está fuera de alcance, devolvé unsupported.",
@@ -155,7 +160,7 @@ export class GoogleGenAIInterpreter implements SemanticInterpreter {
   }
 }
 
-export const GOOGLE_GENAI_DEFAULT_MODEL = "gemini-2.5-flash-lite";
+export const GOOGLE_GENAI_DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
 export function googleGenAIConfigFromEnv(
   env: NodeJS.ProcessEnv = process.env,

@@ -35,7 +35,7 @@ The unit suite covers lexicon stability/exclusions, default-provider policy, all
 - `npm ci`: PASS with the committed lockfile.
 - `npm run check`: PASS — TypeScript, 14 test files passed / 3 skipped, 118 tests passed / 15 skipped, and Next production build passed.
 - `npm run eval:c3`: PASS in deterministic mode with the result above.
-- Live provider evaluation: NOT RUN; neither `GEMINI_API_KEY` nor another Google credential was available.
+- Live provider smoke: PASS for one representative question using `gemini-3.5-flash-lite`; full 20-question live evaluation was not run.
 
 ## Google GenAI adapter
 
@@ -44,9 +44,9 @@ Google mode is activated only with:
 ```text
 C3_INTERPRETER_PROVIDER=google
 GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-2.5-flash-lite   # optional
+GEMINI_MODEL=gemini-3.5-flash-lite   # optional
 ```
 
 The adapter applies a 1,000-character question limit, 32,000-character prompt limit, 700 output-token ceiling, 15-second timeout, temperature zero, one candidate, JSON structured output, and at most one bounded transient retry. It records model/request/usage/latency metadata without storing prompts or credentials.
 
-No Google credentials were available in this qualification environment, so no live provider call, latency, token, or model-accuracy claim is made. The public preview remains compile-only and the existing C1 UI remains GoldenInterpreter-backed.
+The live smoke returned a resolved CensusQuery through the server with `provider=google-genai`; it does not establish full model accuracy. The public preview remains compile-only and GoldenInterpreter remains the default unless Google mode is explicitly configured.

@@ -38,7 +38,7 @@ These include real local VP RADIO execution for the two representative aggregate
 
 ## Known limitations
 
-1. Live C3 Gemini evaluation: NOT RUN; no Google credentials in cloud.
+1. Full live C3 Gemini evaluation: NOT RUN; one representative local provider smoke passed, but the 20-question live corpus was not run.
 2. Browser smoke was run with Chrome headless, not Playwright. UI rendering, local execution, provenance and copy control presence passed; clipboard permission/write confirmation itself was not asserted.
 3. Public preview deployment: NOT DONE. No Vercel project matching argentina-censo-query was found in the available project search. Do not automatically create an external deployment.
 4. The npm 11 lockfile issue was corrected in the reviewed package-lock diff described above; CI/workflow policy was otherwise unchanged.
