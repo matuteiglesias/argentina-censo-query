@@ -48,7 +48,6 @@ export const CompilationBundleSchema = z
   .object({
     contract: z.literal("argentina.census-compilation/v1"),
     original_question: z.string().trim().min(1),
-    interpretation_summary: z.string().trim().min(1),
     query: CensusQuerySchema,
     context: CompilationContextSchema,
     targets: z
