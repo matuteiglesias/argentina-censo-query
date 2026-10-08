@@ -89,7 +89,7 @@ export const SemanticIntentSchema = z
   .object({
     contract: z.literal("argentina.census-semantic-intent/v1"),
     original_question: z.string().trim().min(1),
-    universe_concept: ConceptIdSchema.optional(),
+    universe_concept: ConceptIdSchema,
     measure: IntentMeasureSchema,
     filters: z.array(IntentPredicateSchema).max(8).default([]),
     breakdown: IntentBreakdownSchema.optional(),
