@@ -1,6 +1,6 @@
 import type { CensusCatalog } from "../contracts/catalog.js";
-import type { CensusQuery, Predicate } from "../contracts/census-query.js";
-import type { ScalarValue } from "../contracts/common.js";
+import type { CensusQuery } from "../contracts/census-query.js";
+import type { Predicate, ScalarValue } from "../contracts/common.js";
 
 export type QueryDescription = {
   universe: string;
