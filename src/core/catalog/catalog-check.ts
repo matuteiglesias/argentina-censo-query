@@ -90,6 +90,23 @@ export function checkCatalog(input: unknown): {
   }
   const entitySet = new Set(entityIds);
 
+  const entityTerms = new Map<string, string>();
+  for (const entity of catalog.entities) {
+    for (const raw of [...entity.concepts, ...entity.aliases]) {
+      const term = normalizeCatalogTerm(raw);
+      const previous = entityTerms.get(term);
+      if (previous && previous !== entity.id) {
+        issues.push({
+          code: "ambiguous_entity_term",
+          path: "entities",
+          message: `term "${raw}" resolves to both ${previous} and ${entity.id}`,
+        });
+      } else {
+        entityTerms.set(term, entity.id);
+      }
+    }
+  }
+
   for (const [index, entity] of catalog.entities.entries()) {
     if (entity.universe_id !== catalog.universe.id) {
       issues.push({
@@ -100,7 +117,19 @@ export function checkCatalog(input: unknown): {
     }
   }
 
+  const parentByChild = new Map<string, string>();
   for (const [index, relationship] of catalog.relationships.entries()) {
+    const previousParent = parentByChild.get(relationship.child);
+    if (previousParent && previousParent !== relationship.parent) {
+      issues.push({
+        code: "multiple_entity_parents",
+        path: `relationships.${index}`,
+        message: `${relationship.child} has parents ${previousParent} and ${relationship.parent}`,
+      });
+    } else {
+      parentByChild.set(relationship.child, relationship.parent);
+    }
+
     if (!entitySet.has(relationship.child) || !entitySet.has(relationship.parent)) {
       issues.push({
         code: "relationship_unknown_entity",
@@ -114,6 +143,23 @@ export function checkCatalog(input: unknown): {
         path: `relationships.${index}`,
         message: "relationship child and parent must differ",
       });
+    }
+  }
+
+  for (const start of entityIds) {
+    const seen = new Set<string>();
+    let current: string | undefined = start;
+    while (current) {
+      if (seen.has(current)) {
+        issues.push({
+          code: "relationship_cycle",
+          path: "relationships",
+          message: `entity relationship cycle reachable from ${start}`,
+        });
+        break;
+      }
+      seen.add(current);
+      current = parentByChild.get(current);
     }
   }
 
@@ -194,6 +240,24 @@ export function checkCatalog(input: unknown): {
     categoryKeys.add(key);
   }
 
+  const categoryTerms = new Map<string, string>();
+  for (const category of catalog.categories) {
+    for (const raw of [...category.concepts, ...category.aliases]) {
+      const key = category.variable + ":" + normalizeCatalogTerm(raw);
+      const categoryIdentity = JSON.stringify(category.code);
+      const previous = categoryTerms.get(key);
+      if (previous && previous !== categoryIdentity) {
+        issues.push({
+          code: "ambiguous_category_term",
+          path: "categories",
+          message: `term "${raw}" resolves to multiple codes for ${category.variable}`,
+        });
+      } else {
+        categoryTerms.set(key, categoryIdentity);
+      }
+    }
+  }
+
   for (const variable of catalog.variables) {
     if (
       variable.category_coverage === "complete" &&
@@ -216,6 +280,23 @@ export function checkCatalog(input: unknown): {
             message: `${variable.id} declares complete coverage but lacks code ${code}`,
           });
         }
+      }
+    }
+  }
+
+  const geographyTerms = new Map<string, string>();
+  for (const geography of catalog.geographies) {
+    for (const raw of [...geography.concepts, ...geography.aliases]) {
+      const term = normalizeCatalogTerm(raw);
+      const previous = geographyTerms.get(term);
+      if (previous && previous !== geography.level) {
+        issues.push({
+          code: "ambiguous_geography_term",
+          path: "geographies",
+          message: `term "${raw}" resolves to both ${previous} and ${geography.level}`,
+        });
+      } else {
+        geographyTerms.set(term, geography.level);
       }
     }
   }
