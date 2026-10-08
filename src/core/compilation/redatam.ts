@@ -51,7 +51,7 @@ function breakdownVariable(query: CensusQuery): string | undefined {
 export function renderRedatamFilterExpression(
   query: CensusQuery,
 ): string | undefined {
-  const parts = query.filters.map(redatamPredicate);
+  const parts = query.filters.map(renderRedatamPredicate);
   if (query.geography_selection.type === "include") {
     const variable = geographyVariable(query.geography_selection.level);
     parts.push(
